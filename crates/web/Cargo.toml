@@ -1,0 +1,11 @@
+[package]
+name = "web"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+infrastructure = { path = "../infrastructure" }
+domain = { path = "../domain" }
+rocket = { workspace = true }
+chrono = { workspace = true }
+serde = { workspace = true }
