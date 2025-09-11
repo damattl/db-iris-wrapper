@@ -17,4 +17,5 @@ dotenvy = { workspace = true }
 rocket_okapi = { workspace = true }
 schemars = { workspace = true }
 
+pretty_env_logger = "0.5.0"
 # TODO: Remove dependecy on infrastructure

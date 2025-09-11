@@ -19,7 +19,9 @@ pub trait TrainPort: Port<Train, String> + Send + Sync {
 }
 
 
-pub trait StopPort: Port<Stop, String> + Send + Sync {}
+pub trait StopPort: Port<Stop, String> + Send + Sync {
+    fn get_for_date(&self, date: &NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
+}
 
 
 pub trait MessagePort: Port<Message, String> + Send + Sync {

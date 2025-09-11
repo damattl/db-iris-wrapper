@@ -131,7 +131,23 @@ impl StopRepo {
     }
 }
 
- impl StopPort for StopRepo {}
+ impl StopPort for StopRepo {
+     fn get_for_date(&self, date: &chrono::NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>> {
+         let mut conn = self.pool.get()?;
+
+         let start: NaiveDateTime = date.and_hms_opt(0, 0, 0).unwrap();
+         let end: NaiveDateTime = (date.succ_opt().unwrap()).and_hms_opt(0, 0, 0).unwrap();
+
+         Ok(stops::table
+             .filter(stops::arrival_planned.ge(start))
+             .filter(stops::arrival_planned.lt(end))
+             .select(StopRow::as_select())
+             .get_results(&mut conn)
+             .map_err(Box::new)
+             .map(|v| v.iter().map(|s| s.to_stop()).collect())?
+         )
+     }
+ }
 
 impl Port<Stop, String> for StopRepo {
     fn persist(&self, stop: &Stop) -> Result<Stop, Box<dyn std::error::Error>> {

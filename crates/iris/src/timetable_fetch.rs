@@ -36,7 +36,10 @@ pub fn get_timetable_for_station(
         return Err(GetTimetableError::EmptyTimetable(time));
     }
     debug!("Body: {}", body);
-    let timetable: Timetable = from_str(&body)?;
+    let timetable: Timetable = from_str(&body).map_err(|e| {
+        error!("Error parsing Timetable Body {}", body);
+        e
+    })?;
 
 
     Ok(timetable)
@@ -57,7 +60,10 @@ pub fn get_timetable_messages_for_station(
         .into_string()?;
 
     debug!("Body: {}", body);
-    let timetable: Timetable = from_str(&body)?;
+    let timetable: Timetable = from_str(&body).map_err(|e| {
+        error!("Error parsing timetable messages body {}", body);
+        e
+    })?;
 
     Ok(timetable)
 }

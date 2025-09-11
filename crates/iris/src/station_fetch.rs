@@ -1,3 +1,5 @@
+use std::{env, fs};
+
 use quick_xml::de::from_str;
 use crate::station_dto::{GetStationError, GetStationInfosError, IRISStation, StationInfo, StationInfosPayload, Stations};
 
@@ -23,12 +25,20 @@ pub fn get_station(id: &str) -> Result<IRISStation, GetStationError> {
     Ok(station)
 }
 
-pub fn get_station_infos() -> Result<Vec<StationInfo>, GetStationInfosError> {
+
+pub fn get_station_infos(from_api: bool) -> Result<Vec<StationInfo>, GetStationInfosError> {
     info!("Fetching stations from bahnvorhersage");
-    let body: String = ureq::get("https://bahnvorhersage.de/api/stations.json")
-    //.set("Example-Header", "header value")
-    .call().map_err(Box::new)?
-    .into_string()?;
+    let body = match from_api {
+        true => {
+            ureq::get("https://bahnvorhersage.de/api/stations.json")
+            //.set("Example-Header", "header value")
+            .call().map_err(Box::new)?
+            .into_string()
+        },
+        false => {
+            fs::read_to_string(env::var("STATION_JSON_PATH").expect("STATION_JSON_PATH must be set"))
+        },
+    }?;
 
     let payload: StationInfosPayload = serde_json::from_str(&body)?;
     info!("Number of stations {} fetched from bahnvorhersage", payload.stations.len());

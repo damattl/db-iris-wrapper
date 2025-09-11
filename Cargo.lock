@@ -3589,6 +3589,7 @@ dependencies = [
  "dotenvy",
  "iris",
  "log",
+ "pretty_env_logger",
  "rocket_okapi",
  "schemars 0.8.22",
  "serde",
