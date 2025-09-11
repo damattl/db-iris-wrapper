@@ -1,9 +1,8 @@
 mod common;
 
-use std::{collections::HashSet, env};
+use std::collections::HashSet;
 
 use dotenvy::dotenv;
-use log::info;
 use wrapper_core::{db::{establish_pg_pool, run_migrations}, model::train::Train, ports::Port, repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}, usecases::{import_iris_data, import_iris_data_for_station_by_ds100, import_station_data}};
 
 use chrono::{Local};
@@ -22,7 +21,7 @@ fn find_duplicates<T: Eq + std::hash::Hash + Clone>(items: &[T]) -> Vec<T> {
     duplicates.into_iter().collect()
 }
 
-// #[test]
+#[test]
 fn import_iris_data_for_single_station_succeeds() {
     dotenv().ok();
     let _ = pretty_env_logger::try_init();

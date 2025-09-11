@@ -1,3 +1,5 @@
+use std::env;
+
 use chrono::{NaiveDateTime, Duration, Timelike};
 
 const HOUR_DURATION: Duration = Duration::hours(1);
@@ -72,4 +74,10 @@ mod tests {
 
         assert_eq!(expected, actual);
     }
+}
+
+pub fn get_bool_env(flag: &str) -> bool {
+    let val = env::var(flag).unwrap_or_else(|_| "false".to_string());
+    let flag: bool = matches!(val.to_lowercase().as_str(), "1" | "true" | "yes" | "on");
+    flag
 }

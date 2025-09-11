@@ -5,11 +5,11 @@ use crate::{
     ingest::{ingest_timetable, ingest_timetable_messages},
     model::{message::Message, station::Station, stop::Stop, train::Train},
     ports::{MessagePort, StationPort, StopPort, TrainPort},
-    utils::HourIter,
+    utils::{get_bool_env, HourIter},
 };
 
 /// Literal identifying long-distance trains in `StationInfo.available_transports`.
-const INTERCITY_TRAIN: &'static str = "INTERCITY_TRAIN";
+const INTERCITY_TRAIN: &str = "INTERCITY_TRAIN";
 
 /// Discover **IRIS-active** stations and persist them.
 ///
@@ -44,7 +44,8 @@ const INTERCITY_TRAIN: &'static str = "INTERCITY_TRAIN";
 pub fn import_station_data(
     port: &dyn StationPort,
 ) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
-    let station_infos = get_station_infos(false)?;
+    let from_api = get_bool_env("LOAD_STATIONS_FROM_API");
+    let station_infos = get_station_infos(from_api)?;
     // TODO: const
     let iris_stations: Vec<StationInfo> = station_infos
         .into_iter()
@@ -149,7 +150,7 @@ pub fn import_iris_data_for_station(
 
         info!("Ingesting timetable");
 
-        let (mut new_trains, mut new_stops) = ingest_timetable(&tt, &station, &date);
+        let (mut new_trains, mut new_stops) = ingest_timetable(&tt, station, &date);
         trains.append(&mut new_trains);
         stops.append(&mut new_stops);
     }

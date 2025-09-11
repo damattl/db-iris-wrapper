@@ -10,7 +10,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::db::schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-
 pub struct Message {
     pub id: String,
     pub train_id: String,
