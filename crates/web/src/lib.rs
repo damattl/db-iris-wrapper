@@ -1,9 +1,12 @@
 use rocket::{Build, Rocket};
 
-mod index;
-mod station;
-mod common;
+use crate::service::AppService;
 
-pub fn build() -> Rocket<Build> {
-    rocket::build().mount("/", index::routes()).mount("/station", station::routes())
+mod index;
+mod stations;
+mod common;
+pub mod service;
+
+pub fn build(service: AppService) -> Rocket<Build> {
+    rocket::build().manage(service).mount("/", index::routes()).mount("/stations", stations::routes())
 }

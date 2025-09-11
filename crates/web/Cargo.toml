@@ -4,8 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-infrastructure = { path = "../infrastructure" }
-domain = { path = "../domain" }
+wrapper-core = { path = "../core" }
 rocket = { workspace = true }
 chrono = { workspace = true }
 serde = { workspace = true }

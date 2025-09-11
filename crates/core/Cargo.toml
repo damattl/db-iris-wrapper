@@ -1,0 +1,19 @@
+[package]
+name = "wrapper-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iris = { path = "../iris" }
+chrono = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+diesel = { version = "2.2.12", features = ["postgres", "chrono", "r2d2"] }
+testcontainers = { version = "0.25.0", features = ["blocking"] }
+diesel_migrations = "2.2.0"
+testcontainers-modules = { version = "0.13.0", features = ["postgres"]}
+dotenvy = { workspace = true }
+
+
+# TODO: Remove dependecy on infrastructure

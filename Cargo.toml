@@ -7,3 +7,5 @@ thiserror = "2.0.16"
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 rocket = {version= "0.5.1", features = ["json"]}
+log = "0.4.28"
+dotenvy = "0.15.0"

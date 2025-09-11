@@ -1,6 +1,7 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Deserializer, Serialize};
 
+
 #[derive(thiserror::Error, Debug)]
 pub enum GetTimetableError {
     #[error(transparent)]
@@ -9,6 +10,10 @@ pub enum GetTimetableError {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Xml(#[from] quick_xml::DeError),
+    #[error("status {0}, error_response: {1}")]
+    RequestFailed(u16, String),
+    #[error("empty timetable for {0}")]
+    EmptyTimetable(u16),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -22,17 +27,14 @@ pub struct Timetable {
     pub stops: Vec<Stop>,
 }
 
-// ---------- Stop (s) ----------
-
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Stop {
     #[serde(rename = "@id")]
     pub id: String,
 
     #[serde(rename = "@eva")]
-    pub eva: Option<String>, // present in your new file
+    pub eva: Option<String>,
 
-    // Train meta (sometimes present, sometimes absent)
     #[serde(default)]
     pub tl: Option<TrainLine>,
 
@@ -49,8 +51,6 @@ pub struct Stop {
     #[serde(default)]
     pub departure: Option<Movement>,
 }
-
-// ---------- TrainLine (tl) ----------
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct TrainLine {
@@ -84,7 +84,7 @@ pub struct Movement {
     #[serde(rename = "@hi")]
     pub hi: Option<u8>,
 
-    // full / changed path (pipe-separated)
+
     #[serde(rename = "@ppth", default, deserialize_with = "opt_pipe_list")]
     pub ppth: Option<Vec<String>>,
     #[serde(rename = "@cpth", default, deserialize_with = "opt_pipe_list")]
