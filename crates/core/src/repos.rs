@@ -50,7 +50,7 @@ impl StationPort for StationRepo {
         let mut conn = self.pool.get()?;
         Ok(stations::table.filter(stations::ds100.eq(ds100)).select(Station::as_select()).first(&mut conn).map_err(Box::new)?)
     }
-    fn from_sql(&self, path: &str) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
+    fn import_from_sql(&self, path: &str) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
         run_sql_file::<Station>(&self.pool, path)
     }
 }

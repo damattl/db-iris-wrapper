@@ -11,7 +11,7 @@ pub trait Port<T, ID> {
 
 pub trait StationPort: Port<Station, i32> + Send + Sync {
     fn get_by_ds100(&self, ds100: &str) -> Result<Station, Box<dyn std::error::Error>>;
-    fn from_sql(&self, path: &str) -> Result<Vec<Station>, Box<dyn std::error::Error>>;
+    fn import_from_sql(&self, path: &str) -> Result<Vec<Station>, Box<dyn std::error::Error>>;
 }
 
 pub trait TrainPort: Port<Train, String> + Send + Sync {

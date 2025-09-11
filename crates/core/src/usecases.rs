@@ -1,10 +1,10 @@
-use std::{env, fs};
+use std::{env};
 
 use chrono::{NaiveDate, NaiveDateTime};
 use iris::{dto::{GetTimetableError, StationInfo}, fetch::get_station_infos};
 
 use crate::{
-    db::run_sql_file, ingest::{ingest_timetable, ingest_timetable_messages}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, StationPort, StopPort, TrainPort}, utils::HourIter
+    ingest::{ingest_timetable, ingest_timetable_messages}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, StationPort, StopPort, TrainPort}, utils::HourIter
 };
 
 /// Literal identifying long-distance trains in `StationInfo.available_transports`.
@@ -68,7 +68,7 @@ pub fn import_station_data(
         },
         "SQL" => {
             println!("{}", src);
-            let results = port.from_sql(src)?;
+            let results = port.import_from_sql(src)?;
             return Ok(results)
         },
         _ => {

@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use diesel::{pg::Pg, r2d2::{self, ConnectionManager}, sql_query, Connection, PgConnection, QueryableByName, RunQueryDsl};
+use diesel::{r2d2::{self, ConnectionManager}, Connection, PgConnection, QueryableByName, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 
