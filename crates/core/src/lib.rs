@@ -1,6 +1,6 @@
 #[macro_use] extern crate log;
 
-pub mod train;
+
 pub mod codes;
 pub mod model;
 pub mod ingest;
