@@ -8,6 +8,10 @@ The data is requested periodically and stored in a database.
 - Can only supply with data that is already stored
 - Is currently limited to stations that are capable of handling intercity trains
 
+## Deployment:
+The project can be deployed using the docker-compose.yaml
+Currently it is available under [https://db-iris.it-solutions-mayer.de](https://db-iris.it-solutions-mayer.de)
+
 ## ToDo:
 - [ ] Add more tests
 - [ ] Add Documentation
