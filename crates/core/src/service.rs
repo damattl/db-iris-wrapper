@@ -137,7 +137,7 @@ impl ImportService {
         let train_repo_clone = self.train_repo.clone();
         let stop_repo_clone = self.stop_repo.clone();
         thread::spawn(move || {
-            let mut loop_count = 0;
+            let mut loop_count = 11 * 3 + 1;
             let single_station = env::var("SINGLE_STATION");
 
             while !stop_ch_clone.load(Ordering::Relaxed) {

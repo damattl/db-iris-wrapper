@@ -363,7 +363,9 @@ pub fn import_iris_messages(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let stations = station_port.get_all()?;
     for station in stations {
-        import_iris_messages_for_station(&station, date, message_port, stop_port)?;
+        let _ = import_iris_messages_for_station(&station, date, message_port, stop_port).inspect_err(
+            |e| error!("Error while importing iris_messages for station {}: {}", station.id, e)
+        );
     }
     Ok(())
 }
