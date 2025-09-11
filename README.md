@@ -17,5 +17,6 @@ Currently it is available under [https://db-iris.it-solutions-mayer.de](https://
 - [ ] Add Documentation
 - [ ] Add UI
 - [ ] Document deployment
+- [ ] Make querying the api more efficient (always query 6 hours in advance)
 
 This is my first rust project, it took me about 40 hours so far to write it
