@@ -1,14 +1,14 @@
-use rocket::{get, Route};
-use rocket_okapi::{okapi::openapi3::OpenApi, openapi, openapi_get_routes_spec};
+use rocket::{get, routes, Route};
+use rocket_okapi::{openapi};
 
 #[openapi]
 #[get("/")]
 fn index() -> &'static str {
-    "Hello, world!"
+    "Wir wünschen eine gute Fahrt"
 }
 
-pub fn routes() -> (Vec<Route>, OpenApi) {
-    openapi_get_routes_spec![
+pub fn routes() -> Vec<Route> {
+    routes![
         index,
     ]
 }

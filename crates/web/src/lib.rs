@@ -20,12 +20,13 @@ pub fn build(service: AppService) -> Rocket<Build> {
     let settings = OpenApiSettings::default();
     mount_endpoints_and_merged_docs! {
         builder, "/v1".to_owned(), settings,
-        "/" => index::routes(),
         "/stations" => stations::routes(),
         "/trains" =>  trains::routes(),
         "/messages" => messages::routes()
     };
-    builder.mount(
+    builder
+        .mount("/", index::routes())
+        .mount(
         "/v1/swagger",
         make_swagger_ui(&SwaggerUIConfig {
             url: "../openapi.json".to_owned(),
