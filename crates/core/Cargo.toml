@@ -14,6 +14,7 @@ testcontainers = { version = "0.25.0", features = ["blocking"] }
 diesel_migrations = "2.2.0"
 testcontainers-modules = { version = "0.13.0", features = ["postgres"]}
 dotenvy = { workspace = true }
-
+rocket_okapi = { workspace = true }
+schemars = { workspace = true }
 
 # TODO: Remove dependecy on infrastructure

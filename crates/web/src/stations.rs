@@ -1,12 +1,15 @@
-use rocket::{get, response::status, routes, serde::json::Json, Route, State};
+use rocket::{get, response::status, serde::json::Json, Route, State};
 use rocket::http::Status;
+use rocket_okapi::okapi::openapi3::OpenApi;
+use rocket_okapi::{openapi, openapi_get_routes_spec};
 use wrapper_core::{model::{station::Station, train::Train}};
 
+use crate::common::JsonResult;
 use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
-type JsonErr = status::Custom<Json<ErrorBody>>;
 
+#[openapi(tag = "Stations")]
 #[get("/")]
-fn stations(st: &State<AppService>) -> Result<Json<Vec<Station>>, JsonErr> {
+fn stations(st: &State<AppService>) -> JsonResult<Vec<Station>> {
     let stations = st.station_repo.get_all().map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
             error: "Failed to fetch station infos",
@@ -17,8 +20,9 @@ fn stations(st: &State<AppService>) -> Result<Json<Vec<Station>>, JsonErr> {
     Ok(Json(stations))
 }
 
+#[openapi(tag = "Stations")]
 #[get("/<ds100>")]
-fn station(ds100: &str, st: &State<AppService>) -> Result<Json<Station>, JsonErr> {
+fn station(ds100: &str, st: &State<AppService>) -> JsonResult<Station> {
     let station = st.station_repo.get_by_ds100(ds100);
 
     match station {
@@ -30,8 +34,9 @@ fn station(ds100: &str, st: &State<AppService>) -> Result<Json<Station>, JsonErr
     }
 }
 
+#[openapi(tag = "Stations")]
 #[get("/<ds100>/trains/<date>")]
-fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> Result<Json<Vec<Train>>, JsonErr> {
+fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<Train>> {
     let station = st.station_repo.get_by_ds100(ds100).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
             error: "Failed to fetch station infos",
@@ -50,8 +55,8 @@ fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> R
 }
 
 
-pub fn routes() -> Vec<Route> {
-    routes![
+pub fn routes() -> (Vec<Route>, OpenApi) {
+    openapi_get_routes_spec![
         station, trains_for_station, stations
     ]
 }

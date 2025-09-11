@@ -1,10 +1,13 @@
 use chrono::NaiveDateTime;
+
+use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::train::Train;
 use super::station::Station;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct Stop {
     pub id: String,
     pub train_id: String,
@@ -27,6 +30,7 @@ impl Stop {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(JsonSchema)]
 pub struct Movement {
     pub platform: Option<String>,
     pub planned: Option<NaiveDateTime>,

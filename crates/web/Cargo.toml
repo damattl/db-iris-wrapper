@@ -8,3 +8,5 @@ wrapper-core = { path = "../core" }
 rocket = { workspace = true }
 chrono = { workspace = true }
 serde = { workspace = true }
+rocket_okapi = { workspace = true }
+schemars = { workspace = true }

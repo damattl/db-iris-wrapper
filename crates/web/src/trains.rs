@@ -1,12 +1,15 @@
-use rocket::{get, response::status, routes, serde::json::Json, Route, State};
+use rocket::{get, response::status, serde::json::Json, Route, State};
 use rocket::http::Status;
+use rocket_okapi::okapi::openapi3::OpenApi;
+use rocket_okapi::{openapi, openapi_get_routes_spec};
 use wrapper_core::{model::{train::Train}};
 
+use crate::common::JsonResult;
 use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
-type JsonErr = status::Custom<Json<ErrorBody>>;
 
+#[openapi(tag = "Trains")]
 #[get("/?<date>")] // TODO: Maybe disable this route the more data is available
-fn trains(date: Option<DateParam>, st: &State<AppService>) -> Result<Json<Vec<Train>>, JsonErr> {
+fn trains(date: Option<DateParam>, st: &State<AppService>) -> JsonResult<Vec<Train>> {
     let trains = match date {
         Some(date) => {
             st.train_repo.get_by_date(&date.0).map_err(|e| {
@@ -30,8 +33,9 @@ fn trains(date: Option<DateParam>, st: &State<AppService>) -> Result<Json<Vec<Tr
     Ok(Json(trains))
 }
 
+#[openapi(tag = "Trains")]
 #[get("/<number>/<date>")]
-fn train(number: &str, date: DateParam, st: &State<AppService>) -> Result<Json<Train>, JsonErr> {
+fn train(number: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Train> {
     let id = Train::new_id(number, &date.0);
     let train = st.train_repo.get_by_id(id);
 
@@ -45,8 +49,8 @@ fn train(number: &str, date: DateParam, st: &State<AppService>) -> Result<Json<T
 }
 
 
-pub fn routes() -> Vec<Route> {
-    routes![
+pub fn routes() -> (Vec<Route>, OpenApi) {
+    openapi_get_routes_spec![
         train, trains
     ]
 }

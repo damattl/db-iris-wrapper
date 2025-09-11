@@ -1,10 +1,13 @@
 use std::num::ParseIntError;
-
 use diesel::prelude::*;
+
+use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Queryable, Selectable, Insertable, Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema)]
+#[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::db::schema::stations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Station {

@@ -1,8 +1,12 @@
 use chrono::NaiveDate;
 use rocket::{form::{self, FromFormField}, request::FromParam};
+use rocket_okapi::okapi::schemars;
+use rocket_okapi::okapi::schemars::JsonSchema;
+
 
 const DATE_FMT: &str = "%y%m%d"; // e.g., 2025-09-07
 
+#[derive(Debug, JsonSchema)]
 pub struct DateParam(pub NaiveDate);
 
 impl<'r> FromParam<'r> for DateParam {

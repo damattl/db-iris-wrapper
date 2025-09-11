@@ -1,11 +1,16 @@
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
+
+use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+
+#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 #[derive(Queryable, Selectable, Insertable)]
-#[derive(Debug, Clone, Serialize, Deserialize)]
 #[diesel(table_name = crate::db::schema::messages)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
+
 pub struct Message {
     pub id: String,
     pub train_id: String,

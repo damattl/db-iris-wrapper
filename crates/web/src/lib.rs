@@ -1,4 +1,5 @@
 use rocket::{Build, Rocket};
+use rocket_okapi::{mount_endpoints_and_merged_docs, settings::OpenApiSettings, swagger_ui::{make_swagger_ui, SwaggerUIConfig}};
 
 use crate::service::AppService;
 
@@ -15,10 +16,20 @@ mod messages;
 
 
 pub fn build(service: AppService) -> Rocket<Build> {
-    rocket::build()
-        .manage(service)
-        .mount("/", index::routes())
-        .mount("/stations", stations::routes())
-        .mount("/trains", trains::routes())
-        .mount("/messages", messages::routes())
+    let mut builder = rocket::build().manage(service);
+    let settings = OpenApiSettings::default();
+    mount_endpoints_and_merged_docs! {
+        builder, "/v1".to_owned(), settings,
+        "/" => index::routes(),
+        "/stations" => stations::routes(),
+        "/trains" =>  trains::routes(),
+        "/messages" => messages::routes()
+    };
+    builder.mount(
+        "/v1/swagger",
+        make_swagger_ui(&SwaggerUIConfig {
+            url: "../openapi.json".to_owned(),
+            ..Default::default()
+        }),
+    )
 }

@@ -1,12 +1,15 @@
 use chrono::{NaiveDate};
 use iris;
+
+use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::db::schema::trains)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema)]
 pub struct Train {
     pub id: String, // Custom ID: format: number-date
     pub operator: Option<String>,
