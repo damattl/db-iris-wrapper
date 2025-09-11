@@ -58,6 +58,9 @@ pub fn get_timetable_messages_for_station(
         .call().map_err(Box::new)?
         .into_string()?;
 
+    if body.starts_with("<timetable/>") {
+        return Err(GetTimetableError::EmptyTimetable(25));
+    }
     debug!("Body: {}", body);
     let timetable: Timetable = from_str(&body).inspect_err(|_| {
         error!("Error parsing timetable messages body {}", body);

@@ -77,7 +77,7 @@ fn import_iris_data_for_single_station_succeeds() {
 }
 
 
-#[test]
+/*  #[test] // Testing all stations is insanity, this takes minutes
 fn import_iris_data_succeeds() { // More like a ratelimit tester for the iris endpoint
     dotenv().ok();
     let _ = pretty_env_logger::try_init();
@@ -106,6 +106,6 @@ fn import_iris_data_succeeds() { // More like a ratelimit tester for the iris en
     assert!(trains.len() > 0);
     assert!(stops.len() > 0);
     assert!(messages.len() > 0);
-}
+}*/
 // TODO: Test wrong station code
 // TODO: Test wrong date code

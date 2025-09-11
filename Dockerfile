@@ -28,6 +28,10 @@ WORKDIR /app
 
 COPY --from=builder /app/target/release/db-iris-wrapper /usr/local/bin/db-iris-wrapper
 
+# TODO: Make optiona
+ENV STATIONS_SRC=SQL:/etc/db-iris-wrapper/stations.sql
+COPY stations.sql /etc/db-iris-wrapper/stations.sql
+
 ENV ROCKET_CONFIG=/etc/rocket/Rocket.toml
 COPY Rocket.toml /etc/rocket/Rocket.toml
 

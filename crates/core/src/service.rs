@@ -51,11 +51,10 @@
 //! ```
 
 use std::{
-    sync::{
+    env, sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
-    },
-    thread,
+    }, thread
 };
 use std::time::Duration;
 
@@ -64,8 +63,7 @@ use chrono::Local;
 use crate::{
     ports::{MessagePort, StationPort, StopPort, TrainPort},
     usecases::{
-        import_iris_data_for_station_by_ds100, import_iris_messages_for_station_by_ds100,
-        import_station_data,
+        import_iris_data, import_iris_data_for_station_by_ds100, import_iris_messages, import_iris_messages_for_station_by_ds100, import_station_data
     },
 };
 
@@ -134,12 +132,13 @@ impl ImportService {
         import_station_data(self.station_repo.as_ref()).unwrap(); // TODO: Do this once every day
 
         let stop_ch_clone = self.stop_ch.clone();
-        // let station_repo_clone = self.station_repo.clone();
+        let station_repo_clone = self.station_repo.clone();
         let message_repo_clone = self.message_repo.clone();
         let train_repo_clone = self.train_repo.clone();
         let stop_repo_clone = self.stop_repo.clone();
         thread::spawn(move || {
             let mut loop_count = 0;
+            let single_station = env::var("SINGLE_STATION");
 
             while !stop_ch_clone.load(Ordering::Relaxed) {
                 let datetime = Local::now().naive_local(); // TODO: Should this be utc or local? Decide
@@ -147,26 +146,62 @@ impl ImportService {
                     loop_count = 0;
                     // Every 11 hours, but the loop sleeps for 20 minutes each, so 3 loops = 1 hour
                     // Combined with the time required for fetching the data this might result in some time drift
-                    match import_iris_data_for_station_by_ds100(
-                        "AH", // TODO: Test for all stations
-                        &datetime,
-                        message_repo_clone.as_ref(),
-                        train_repo_clone.as_ref(),
-                        stop_repo_clone.as_ref(),
-                    ) {
-                        Ok(_) => (),
-                        Err(err) => error!("Error while importing iris data: {}", err),
-                    };
+
+                    match single_station {
+                        Ok(_) => {
+                            let result = import_iris_data_for_station_by_ds100(
+                                "AH", // TODO: Test for all stations
+                                &datetime,
+                                message_repo_clone.as_ref(),
+                                train_repo_clone.as_ref(),
+                                stop_repo_clone.as_ref(),
+                            );
+                            match result {
+                                Ok(_) => (),
+                                Err(err) => error!("Error importing iris data: {}", err),
+                            }
+                        },
+                        Err(_) => {
+                            let result = import_iris_data(
+                                &datetime,
+                                station_repo_clone.as_ref(),
+                                message_repo_clone.as_ref(),
+                                train_repo_clone.as_ref(),
+                                stop_repo_clone.as_ref(),
+                            );
+                            match result {
+                                Ok(_) => (),
+                                Err(err) => error!("Error importing iris data: {}", err),
+                            }
+                        },
+                    }
                 } else {
-                    match import_iris_messages_for_station_by_ds100(
-                        "AH", // TODO: Test for all stations
-                        &datetime.date(),
-                        message_repo_clone.as_ref(),
-                        stop_repo_clone.as_ref(),
-                    ) {
-                        Ok(_) => (),
-                        Err(err) => error!("Error importing iris messages: {}", err),
-                    };
+                    match single_station {
+                        Ok(_) => {
+                            match import_iris_messages_for_station_by_ds100(
+                                "AH", // TODO: Test for all stations
+                                &datetime.date(),
+                                message_repo_clone.as_ref(),
+                                stop_repo_clone.as_ref(),
+                            ) {
+                                Ok(_) => (),
+                                Err(err) => error!("Error importing iris messages: {}", err),
+                            };
+                        },
+                        Err(_) => {
+                            match import_iris_messages(
+                                &datetime.date(),
+                                station_repo_clone.as_ref(),
+                                message_repo_clone.as_ref(),
+                                stop_repo_clone.as_ref(),
+                            ) {
+                                Ok(_) => (),
+                                Err(err) => error!("Error importing iris messages: {}", err),
+                            };
+                        },
+                    }
+
+
                 }
                 loop_count += 1;
 

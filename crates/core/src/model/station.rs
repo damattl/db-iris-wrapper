@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
 #[derive(Serialize, Deserialize, JsonSchema)]
-#[derive(Queryable, Selectable, Insertable)]
+#[derive(Queryable, QueryableByName, Selectable, Insertable)]
 #[diesel(table_name = crate::db::schema::stations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Station {

@@ -1,6 +1,8 @@
 use chrono::NaiveDateTime;
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, QueryDsl, RunQueryDsl, SelectableHelper};
 
+use crate::db::run_sql_file;
+
 use super::{db::{model::StopRow, schema::{messages, stations::{self}, stops, trains}, PgPool}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, Port, StationPort, StopPort, TrainPort}};
 
 pub struct StationRepo {
@@ -47,6 +49,9 @@ impl StationPort for StationRepo {
     fn get_by_ds100(&self, ds100: &str) -> Result<Station, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
         Ok(stations::table.filter(stations::ds100.eq(ds100)).select(Station::as_select()).first(&mut conn).map_err(Box::new)?)
+    }
+    fn from_sql(&self, path: &str) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
+        run_sql_file::<Station>(&self.pool, path)
     }
 }
 

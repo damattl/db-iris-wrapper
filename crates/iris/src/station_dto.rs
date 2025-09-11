@@ -103,4 +103,6 @@ pub enum GetStationInfosError {
     Io(#[from] std::io::Error),
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    #[error("invalid src format {0}")]
+    InvalidSourceFormat(String),
 }

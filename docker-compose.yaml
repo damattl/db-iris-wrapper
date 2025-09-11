@@ -30,6 +30,7 @@ services:
         environment:
             RUST_LOG: info
             DATABASE_URL: postgres://user:123456789@database:5432/iris_wrapper
+            SINGLE_STATION: AH
         links:
             - "db:database"
         ports:

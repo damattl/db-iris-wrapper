@@ -1,15 +1,20 @@
+use std::{env, fs};
+
 use chrono::{NaiveDate, NaiveDateTime};
-use iris::{dto::StationInfo, fetch::get_station_infos};
+use iris::{dto::{GetTimetableError, StationInfo}, fetch::get_station_infos};
 
 use crate::{
-    ingest::{ingest_timetable, ingest_timetable_messages},
-    model::{message::Message, station::Station, stop::Stop, train::Train},
-    ports::{MessagePort, StationPort, StopPort, TrainPort},
-    utils::{get_bool_env, HourIter},
+    db::run_sql_file, ingest::{ingest_timetable, ingest_timetable_messages}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, StationPort, StopPort, TrainPort}, utils::HourIter
 };
 
 /// Literal identifying long-distance trains in `StationInfo.available_transports`.
 const INTERCITY_TRAIN: &str = "INTERCITY_TRAIN";
+
+#[derive(thiserror::Error, Debug)]
+pub enum ImportStationsError {
+    #[error("invalid src format {0}")]
+    InvalidSourceFormat(String),
+}
 
 /// Discover **IRIS-active** stations and persist them.
 ///
@@ -44,10 +49,35 @@ const INTERCITY_TRAIN: &str = "INTERCITY_TRAIN";
 pub fn import_station_data(
     port: &dyn StationPort,
 ) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
-    let from_api = get_bool_env("LOAD_STATIONS_FROM_API");
-    let station_infos = get_station_infos(from_api)?;
+    let stations_src = env::var("STATIONS_SRC")
+        .unwrap_or("API:https://bahnvorhersage.de/api/stations.json".to_string());
+
+    let parts: Vec<String> = stations_src.splitn(2, ':').map(|p| p.to_string()).collect();
+    let src_type = parts.first().ok_or(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))?;
+    let src = parts.get(1).ok_or(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))?;
+
+    let station_infos;
+    println!("{}", stations_src);
+
+    match src_type.as_str() {
+        "API" => {
+            station_infos = get_station_infos(src, true).map_err(Box::new);
+        },
+        "JSON" => {
+            station_infos = get_station_infos(src, false).map_err(Box::new);
+        },
+        "SQL" => {
+            println!("{}", src);
+            let results = port.from_sql(src)?;
+            return Ok(results)
+        },
+        _ => {
+            return Err(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))
+        }
+    };
+
     // TODO: const
-    let iris_stations: Vec<StationInfo> = station_infos
+    let iris_stations: Vec<StationInfo> = station_infos?
         .into_iter()
         .filter(|s| {
             if s.ds100.is_none() {
@@ -155,9 +185,12 @@ pub fn import_iris_data_for_station(
         stops.append(&mut new_stops);
     }
 
-    let tt_with_messages = iris::fetch::get_timetable_messages_for_station(station.id)?;
-    let messages =
-        ingest_timetable_messages(&tt_with_messages, stops.iter().map(|s| (s.id.clone(), s)).collect());
+    let messages = match iris::fetch::get_timetable_messages_for_station(station.id) {
+        Ok(tt) => ingest_timetable_messages(&tt, stops.iter().map(|s| (s.id.clone(), s)).collect()),
+        Err(GetTimetableError::EmptyTimetable(_)) => Vec::new(),
+        Err(err) => return Err(err.into()),
+    };
+
     info!("Ingested {} messages", messages.len());
 
     let new_trains = train_port.persist_all(&trains)?.len();
