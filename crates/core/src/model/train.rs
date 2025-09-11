@@ -28,11 +28,14 @@ pub enum TrainBuildError {
 }
 
 impl Train {
+    pub fn new_id(number: &str, date: &NaiveDate) -> String {
+        format!("{}-{}", number, date.format("%y%m%d"))
+    }
     pub fn from_stop(stop: &iris::dto::Stop, date: &NaiveDate) -> Result<Self, TrainBuildError> {
         let tl = stop.tl.as_ref().ok_or(TrainBuildError::MissingTL)?;
         let number = tl.number.as_ref().ok_or(TrainBuildError::MissingNumber)?;
 
-        let id = format!("{}-{}", number, date.format("%y%m%d"));
+        let id = Self::new_id(number, date);
 
         let arr = &stop.arrival;
         let dep = &stop.departure;

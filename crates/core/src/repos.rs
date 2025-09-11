@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, QueryDsl, RunQueryDsl, SelectableHelper};
 
 use super::{db::{model::StopRow, schema::{messages, stations::{self}, stops, trains}, PgPool}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, Port, StationPort, StopPort, TrainPort}};
@@ -59,7 +60,7 @@ impl TrainRepo {
     }
 }
 
- impl TrainPort<'_> for TrainRepo {
+ impl TrainPort for TrainRepo {
     fn get_by_station_and_date(&self, station: &Station, date: &chrono::NaiveDate) -> Result<Vec<Train>, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
 
@@ -74,10 +75,16 @@ impl TrainRepo {
 
         Ok(results)
     }
+
+
+    fn get_by_date(&self, date: &chrono::NaiveDate) -> Result<Vec<Train>, Box<dyn std::error::Error>> {
+        let mut conn = self.pool.get()?;
+        Ok(trains::table.filter(trains::date.eq(date)).select(Train::as_select()).get_results(&mut conn).map_err(Box::new)?)
+    }
 }
 
 
-impl Port<Train, &str> for TrainRepo {
+impl Port<Train, String> for TrainRepo {
     fn persist(&self, train: &Train) -> Result<Train, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
         Ok(diesel::insert_into(trains::table)
@@ -96,7 +103,7 @@ impl Port<Train, &str> for TrainRepo {
             .get_results::<Train>(&mut conn).map_err(Box::new)?)
     }
 
-    fn get_by_id(&self, id: &str) -> Result<Train, Box<dyn std::error::Error>> {
+    fn get_by_id(&self, id: String) -> Result<Train, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
         Ok(trains::table.find(id).select(Train::as_select()).first(&mut conn).map_err(Box::new)?)
     }
@@ -124,9 +131,9 @@ impl StopRepo {
     }
 }
 
- impl StopPort<'_> for StopRepo {}
+ impl StopPort for StopRepo {}
 
-impl Port<Stop, &str> for StopRepo {
+impl Port<Stop, String> for StopRepo {
     fn persist(&self, stop: &Stop) -> Result<Stop, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
         let result = diesel::insert_into(stops::table)
@@ -147,7 +154,7 @@ impl Port<Stop, &str> for StopRepo {
         Ok(result)
     }
 
-    fn get_by_id(&self, id: &str) -> Result<Stop, Box<dyn std::error::Error>> {
+    fn get_by_id(&self, id: String) -> Result<Stop, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
         Ok(stops::table
             .find(id)
@@ -184,9 +191,39 @@ impl Port<Stop, &str> for StopRepo {
      }
  }
 
- impl MessagePort<'_> for MessageRepo {}
+ impl MessagePort for MessageRepo {
+     fn get_by_date_and_code(&self, date: &chrono::NaiveDate, code: i32) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
+         let mut conn = self.pool.get()?;
 
- impl Port<Message, &str> for MessageRepo {
+
+        let start: NaiveDateTime = date.and_hms_opt(0, 0, 0).unwrap();
+        let end: NaiveDateTime = (date.succ_opt().unwrap()).and_hms_opt(0, 0, 0).unwrap();
+
+         let results = messages::table
+            .filter(messages::timestamp.ge(start))
+            .filter(messages::timestamp.lt(end))
+            .filter(messages::code.eq(code))
+            .select(Message::as_select())
+            .get_results(&mut conn)
+            .map_err(Box::new)?;
+
+         Ok(results)
+     }
+
+     fn get_by_train_id(&self, train_id: &str) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
+         let mut conn = self.pool.get()?;
+
+         let results = messages::table
+            .filter(messages::train_id.eq(train_id))
+            .select(Message::as_select())
+            .get_results(&mut conn)
+            .map_err(Box::new)?;
+
+         Ok(results)
+     }
+ }
+
+ impl Port<Message, String> for MessageRepo {
      fn persist(&self, message: &Message) -> Result<Message, Box<dyn std::error::Error>> {
          let mut conn = self.pool.get()?;
          Ok(diesel::insert_into(messages::table)
@@ -207,7 +244,7 @@ impl Port<Stop, &str> for StopRepo {
              .map_err(Box::new)?)
      }
 
-     fn get_by_id(&self, id: &str) -> Result<Message, Box<dyn std::error::Error>> {
+     fn get_by_id(&self, id: String) -> Result<Message, Box<dyn std::error::Error>> {
          let mut conn = self.pool.get()?;
          Ok(messages::table
              .find(id)

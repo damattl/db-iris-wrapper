@@ -47,6 +47,32 @@ pub fn ingest_timetable_messages(tt_with_messages: &Timetable, stops: HashMap<St
             };
             messages.push(message);
         }
+
+        if iris_stop.arrival.is_some() {
+            for msg in iris_stop.arrival.as_ref().unwrap().msgs.iter() {
+                let message = match Message::from_iris_msg(msg, &train_id) {
+                    Ok(message) => message,
+                    Err(err) => {
+                        error!("Error building message from iris message: {}", err);
+                        continue;
+                    }
+                };
+                messages.push(message);
+            }
+        }
+
+        if iris_stop.departure.is_some() {
+            for msg in iris_stop.departure.as_ref().unwrap().msgs.iter() {
+                let message = match Message::from_iris_msg(msg, &train_id) {
+                    Ok(message) => message,
+                    Err(err) => {
+                        error!("Error building message from iris message: {}", err);
+                        continue;
+                    }
+                };
+                messages.push(message);
+            }
+        }
     }
     messages
 }

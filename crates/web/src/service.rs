@@ -4,7 +4,7 @@ use wrapper_core::ports::{MessagePort, StationPort, StopPort, TrainPort};
 
 pub struct AppService {
     pub station_repo: Arc<dyn StationPort>,
-    pub message_repo: Arc<dyn MessagePort<'static>>,
-    pub train_repo: Arc<dyn TrainPort<'static>>,
-    pub stop_repo: Arc<dyn StopPort<'static>>
+    pub message_repo: Arc<dyn MessagePort>,
+    pub train_repo: Arc<dyn TrainPort>,
+    pub stop_repo: Arc<dyn StopPort>
 } // TODO: Read more on static
