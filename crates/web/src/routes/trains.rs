@@ -61,6 +61,6 @@ fn train(number: &str, include_stops: Option<bool>, date: DateParam, st: &State<
 
 pub fn routes() -> (Vec<Route>, OpenApi) {
     openapi_get_routes_spec![
-        train, trains
+        train, trains, train_by_id
     ]
 }
