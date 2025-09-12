@@ -70,7 +70,7 @@ where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(de)?;
-    // Your sample is "25-09-02 10:42:08.821" → %y-%m-%d %H:%M:%S%.3f
+    // "25-09-02 10:42:08.821" → %y-%m-%d %H:%M:%S%.3f
     NaiveDateTime::parse_from_str(&s, "%y-%m-%d %H:%M:%S%.3f")
         .or_else(|_| NaiveDateTime::parse_from_str(&s, "%y-%m-%d %H:%M:%S"))
         .map_err(serde::de::Error::custom)

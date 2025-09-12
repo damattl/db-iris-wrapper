@@ -12,6 +12,10 @@ The data is requested periodically and stored in a database.
 The project can be deployed using the docker-compose.yaml
 Currently it is available under [https://db-iris.it-solutions-mayer.de](https://db-iris.it-solutions-mayer.de)
 
+## Timezones:
+Timestamps are stored in display time.
+If the train arrived at the stop at 11.09.2025 19:22 CEST this is stored in the database as 2025-09-11 19:22:00.000000
+
 ## ToDo:
 - [ ] Add more tests
 - [ ] Add Documentation
