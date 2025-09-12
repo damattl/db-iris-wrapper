@@ -44,8 +44,10 @@ impl Movement {
     }
 }
 
-pub fn split_stops_by_time<M>(stops: &[Stop], now: &NaiveDateTime, mapper: fn(stop: &Stop) -> M) -> (Option<M>, Vec<M>, Vec<M>) {
-    let mut earliest = *now;
+pub fn split_stops_by_time<M>(stops: &[Stop], now: &NaiveDateTime, mapper: fn(stop: &Stop) -> M) -> (Option<M>, Vec<M>, Vec<M>)
+where M: Clone
+{
+    let mut earliest: Option<NaiveDateTime> = None;
     let mut next_stop: Option<M> = None;
 
     let mut next_stops = Vec::<M>::new();
@@ -64,11 +66,16 @@ pub fn split_stops_by_time<M>(stops: &[Stop], now: &NaiveDateTime, mapper: fn(st
         };
 
         if relevant_time > *now {
-            if earliest > relevant_time {
-                earliest = relevant_time;
-                next_stop = Some(mapper(stop));
+            let mapped_stop = mapper(stop);
+
+            if earliest.is_none() {
+                earliest = Some(relevant_time);
+                next_stop = Some(mapped_stop.clone());
+            } else if earliest.unwrap() > relevant_time {
+                earliest = Some(relevant_time);
+                next_stop = Some(mapped_stop.clone());
             };
-            next_stops.push(mapper(stop));
+            next_stops.push(mapped_stop);
         } else {
             past_stops.push(mapper(stop));
         }

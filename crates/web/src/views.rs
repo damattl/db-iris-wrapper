@@ -21,7 +21,7 @@ impl TrainView {
     pub fn from_model(train: &Train, stops: &[Stop]) -> Self {
         // TODO: Sort stops by time
         let now = Utc::now().with_timezone(&Berlin).naive_local();
-        let (next_stop, past_stops, next_stops) = split_stops_by_time(stops, &now, |stop| StopView::from_model(stop, true));
+        let (next_stop, next_stops, past_stops) = split_stops_by_time(stops, &now, |stop| StopView::from_model(stop, true));
 
         TrainView {
             id: train.id.clone(),
