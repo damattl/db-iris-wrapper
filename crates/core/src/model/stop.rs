@@ -68,13 +68,11 @@ where M: Clone
         if relevant_time > *now {
             let mapped_stop = mapper(stop);
 
-            if earliest.is_none() {
+            if earliest.is_none_or(|t| t > relevant_time) {
                 earliest = Some(relevant_time);
                 next_stop = Some(mapped_stop.clone());
-            } else if earliest.unwrap() > relevant_time {
-                earliest = Some(relevant_time);
-                next_stop = Some(mapped_stop.clone());
-            };
+            }
+
             next_stops.push(mapped_stop);
         } else {
             past_stops.push(mapper(stop));

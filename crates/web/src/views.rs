@@ -4,6 +4,7 @@ use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use wrapper_core::model::{message::Message, station::Station, stop::{split_stops_by_time, Movement, Stop}, train::Train};
 
+#[derive(Clone, Debug)]
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct TrainView {
     pub id: String,
@@ -36,7 +37,7 @@ impl TrainView {
         }
     }
 }
-
+#[derive(Clone, Debug)]
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct StopView {
     pub id: String,
