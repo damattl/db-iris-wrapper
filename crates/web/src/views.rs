@@ -23,7 +23,7 @@ impl TrainView {
             number: train.number.clone(),
             line: train.line.clone(),
             date: train.date,
-            stops: stops.iter().map(StopView::from_model).collect(),
+            stops: stops.iter().map(|s| StopView::from_model(s, true)).collect(),
         }
     }
 }
@@ -39,13 +39,18 @@ pub struct StopView {
 }
 
 impl StopView {
-    pub fn from_model(stop: &Stop) -> Self {
+    pub fn from_model(stop: &Stop, simple: bool) -> Self {
+        let movement_builder = match simple {
+            true => MovementView::from_model_simple,
+            false => MovementView::from_model,
+        };
+
         StopView {
             id: stop.id.clone(),
             train_id: stop.train_id.clone(),
             station_id: stop.station_id,
-            arrival: stop.arrival.as_ref().map(MovementView::from_model),
-            departure: stop.departure.as_ref().map(MovementView::from_model),
+            arrival: stop.arrival.as_ref().map(movement_builder),
+            departure: stop.departure.as_ref().map(movement_builder),
         }
     }
 }
@@ -60,6 +65,14 @@ pub struct MovementView {
 }
 
 impl MovementView {
+    pub fn from_model_simple(movement: &Movement) -> Self {
+        MovementView {
+            platform: movement.platform.clone(),
+            planned: movement.planned,
+            planned_path: None,
+            changed_path: None,
+        }
+    }
     pub fn from_model(movement: &Movement) -> Self {
         MovementView {
             platform: movement.platform.clone(),
@@ -116,7 +129,7 @@ impl MessageView {
         MessageView {
             id: message.id.clone(),
             train_id: message.train_id.clone(),
-            train: format!("{}/trains/{}", api_base_path, message.train_id),
+            train: format!("{}/trains/{}?include_stops=true", api_base_path, message.train_id),
             valid_from: message.valid_from,
             valid_to: message.valid_to,
             priority: message.priority,
