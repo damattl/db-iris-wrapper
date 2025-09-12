@@ -58,7 +58,8 @@ use std::{
 };
 use std::time::Duration;
 
-use chrono::Local;
+use chrono::Utc;
+use chrono_tz::Europe::Berlin;
 
 use crate::{
     ports::{MessagePort, StationPort, StopPort, TrainPort},
@@ -141,7 +142,9 @@ impl ImportService {
             let single_station = env::var("SINGLE_STATION");
 
             while !stop_ch_clone.load(Ordering::Relaxed) {
-                let datetime = Local::now().naive_local(); // TODO: Should this be utc or local? Decide
+                let datetime = Utc::now().with_timezone(&Berlin).naive_local();
+                // Doesn't make much of a difference if UTC or Berlin, but makes the intention clearer
+
                 if loop_count >= 11 * 3 {
                     loop_count = 0;
                     // Every 11 hours, but the loop sleeps for 20 minutes each, so 3 loops = 1 hour
