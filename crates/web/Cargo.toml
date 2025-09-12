@@ -10,3 +10,4 @@ chrono = { workspace = true }
 serde = { workspace = true }
 rocket_okapi = { workspace = true }
 schemars = { workspace = true }
+chrono-tz = { workspace = true }

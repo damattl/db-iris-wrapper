@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime};
 
 use super::train::Train;
 use super::station::Station;
@@ -42,4 +42,37 @@ impl Movement {
             changed_path: movement.cpth.clone(),
         }
     }
+}
+
+pub fn split_stops_by_time<M>(stops: &[Stop], now: &NaiveDateTime, mapper: fn(stop: &Stop) -> M) -> (Option<M>, Vec<M>, Vec<M>) {
+    let mut earliest = *now;
+    let mut next_stop: Option<M> = None;
+
+    let mut next_stops = Vec::<M>::new();
+    let mut past_stops = Vec::<M>::new();
+
+
+    // TODO: Update when current (belated) time is available
+    // TODO: Maybe move to dedicated function
+    // TODO: Test this logic!
+    for stop in stops {
+        let planned_arrival = stop.arrival.as_ref().and_then(|a| a.planned);
+        let planned_departure = stop.departure.as_ref().and_then(|d| d.planned);
+
+        let Some(relevant_time) = planned_arrival.or(planned_departure) else {
+            continue;
+        };
+
+        if relevant_time > *now {
+            if earliest > relevant_time {
+                earliest = relevant_time;
+                next_stop = Some(mapper(stop));
+            };
+            next_stops.push(mapper(stop));
+        } else {
+            past_stops.push(mapper(stop));
+        }
+    }
+
+    (next_stop, next_stops, past_stops)
 }

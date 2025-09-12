@@ -1,7 +1,8 @@
-use chrono::{NaiveDate, NaiveDateTime};
+use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono_tz::Europe::Berlin;
 use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use wrapper_core::model::{message::Message, station::Station, stop::{Movement, Stop}, train::Train};
+use wrapper_core::model::{message::Message, station::Station, stop::{split_stops_by_time, Movement, Stop}, train::Train};
 
 #[derive(Serialize, Deserialize, JsonSchema)]
 pub struct TrainView {
@@ -11,11 +12,17 @@ pub struct TrainView {
     pub number: String,
     pub line: Option<String>,
     pub date: NaiveDate,
-    pub stops: Vec<StopView>,
+    pub next_stop: Option<StopView>,
+    pub past_stops: Vec<StopView>,
+    pub next_stops: Vec<StopView>,
 }
 
 impl TrainView {
     pub fn from_model(train: &Train, stops: &[Stop]) -> Self {
+        // TODO: Sort stops by time
+        let now = Utc::now().with_timezone(&Berlin).naive_local();
+        let (next_stop, past_stops, next_stops) = split_stops_by_time(stops, &now, |stop| StopView::from_model(stop, true));
+
         TrainView {
             id: train.id.clone(),
             operator: train.operator.clone(),
@@ -23,7 +30,9 @@ impl TrainView {
             number: train.number.clone(),
             line: train.line.clone(),
             date: train.date,
-            stops: stops.iter().map(|s| StopView::from_model(s, true)).collect(),
+            next_stop,
+            next_stops,
+            past_stops,
         }
     }
 }

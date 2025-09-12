@@ -11,3 +11,4 @@ log = "0.4.28"
 dotenvy = "0.15.0"
 rocket_okapi = {version = "0.9.0", features = ["swagger", "rapidoc"]}
 schemars = {version = "0.8.22", features = ["chrono"]}
+chrono-tz = "0.10.4"
