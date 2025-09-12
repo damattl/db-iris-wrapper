@@ -23,11 +23,11 @@ fn stations(st: &State<AppService>) -> JsonResult<Vec<StationView>> {
 
 #[openapi(tag = "Stations")]
 #[get("/<ds100>")]
-fn station(ds100: &str, st: &State<AppService>) -> JsonResult<Station> {
+fn station(ds100: &str, st: &State<AppService>) -> JsonResult<StationView> {
     let station = st.station_repo.get_by_ds100(ds100);
 
     match station {
-        Ok(station) => Ok(Json(station)),
+        Ok(station) => Ok(Json(StationView::from_model(&station))),
         Err(err) => Err(status::Custom(Status::NotFound, Json(ErrorBody {
             error: "Station not found".to_string(),
             message: err.to_string(),
