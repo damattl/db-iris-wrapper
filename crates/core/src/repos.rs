@@ -152,6 +152,17 @@ impl StopRepo {
              .map(|v| v.iter().map(|s| s.to_stop()).collect())?
          )
      }
+
+     fn get_for_train(&self, train_id: &str) -> Result<Vec<Stop>, Box<dyn std::error::Error>> {
+         let mut conn = self.pool.get()?;
+         Ok(stops::table
+             .filter(stops::train_id.eq(train_id))
+             .select(StopRow::as_select())
+             .get_results(&mut conn)
+             .map_err(Box::new)
+             .map(|v| v.iter().map(|s| s.to_stop()).collect())?
+         )
+     }
  }
 
 impl Port<Stop, String> for StopRepo {

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{env, sync::Arc};
 
 use dotenvy::dotenv;
 use log::info;
@@ -17,6 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     run_migrations(pool.clone());
 
     let service = AppService {
+        api_base: env::var("API_BASE").unwrap_or(String::from("http://localhost:8080/v1")), // TODO: Maybe the service should panic if this is not set
         station_repo: Arc::new(StationRepo::new(pool.clone())),
         message_repo: Arc::new(MessageRepo::new(pool.clone())),
         train_repo: Arc::new(TrainRepo::new(pool.clone())),

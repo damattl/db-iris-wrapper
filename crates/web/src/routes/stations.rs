@@ -2,22 +2,23 @@ use rocket::{get, response::status, serde::json::Json, Route, State};
 use rocket::http::Status;
 use rocket_okapi::okapi::openapi3::OpenApi;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
-use wrapper_core::{model::{station::Station, train::Train}};
+use wrapper_core::{model::{station::Station}};
 
 use crate::common::JsonResult;
+use crate::views::{StationView, TrainView};
 use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
 
 #[openapi(tag = "Stations")]
 #[get("/")]
-fn stations(st: &State<AppService>) -> JsonResult<Vec<Station>> {
+fn stations(st: &State<AppService>) -> JsonResult<Vec<StationView>> {
     let stations = st.station_repo.get_all().map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
-            error: "Failed to fetch station infos",
+            error: "Failed to fetch station infos".to_string(),
             message: e.to_string(),
         }))
     })?;
 
-    Ok(Json(stations))
+    Ok(Json(stations.iter().map(StationView::from_model).collect()))
 }
 
 #[openapi(tag = "Stations")]
@@ -28,30 +29,30 @@ fn station(ds100: &str, st: &State<AppService>) -> JsonResult<Station> {
     match station {
         Ok(station) => Ok(Json(station)),
         Err(err) => Err(status::Custom(Status::NotFound, Json(ErrorBody {
-            error: "Station not found",
+            error: "Station not found".to_string(),
             message: err.to_string(),
         }))), // TODO: Better error message
     }
 }
 
 #[openapi(tag = "Stations")]
-#[get("/<ds100>/trains/<date>")]
-fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<Train>> {
+#[get("/<ds100>/trains/<date>")] // TODO: Document that stops is empty
+fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<TrainView>> {
     let station = st.station_repo.get_by_ds100(ds100).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
-            error: "Failed to fetch station infos",
+            error: "Failed to fetch station infos".to_string(),
             message: e.to_string(),
         }))
     })?;
 
     let trains = st.train_repo.get_by_station_and_date(&station, &date.0).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
-            error: "Failed to fetch trains",
+            error: "Failed to fetch trains".to_string(),
             message: e.to_string(),
         }))
     })?; // TODO: for station and date
 
-    Ok(Json(trains))
+    Ok(Json(trains.iter().map(|t| TrainView::from_model(t, &[])).collect()))
 }
 
 

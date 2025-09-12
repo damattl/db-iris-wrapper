@@ -7,11 +7,8 @@ pub mod service;
 
 mod common;
 
-// Route modules
-mod index;
-mod stations;
-mod trains;
-mod messages;
+mod routes;
+mod views;
 
 
 
@@ -20,12 +17,12 @@ pub fn build(service: AppService) -> Rocket<Build> {
     let settings = OpenApiSettings::default();
     mount_endpoints_and_merged_docs! {
         builder, "/v1".to_owned(), settings,
-        "/stations" => stations::routes(),
-        "/trains" =>  trains::routes(),
-        "/messages" => messages::routes()
+        "/stations" => routes::stations::routes(),
+        "/trains" =>  routes::trains::routes(),
+        "/messages" => routes::messages::routes()
     };
     builder
-        .mount("/", index::routes())
+        .mount("/", routes::index::routes())
         .mount(
         "/v1/swagger",
         make_swagger_ui(&SwaggerUIConfig {
