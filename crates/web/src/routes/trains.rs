@@ -2,7 +2,7 @@ use rocket::{get, response::status, serde::json::Json, Route, State};
 use rocket::http::Status;
 use rocket_okapi::okapi::openapi3::OpenApi;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
-use wrapper_core::model::stop::Stop;
+use wrapper_core::model::stop::{StopWithStation};
 use wrapper_core::{model::{train::Train}};
 
 use crate::common::JsonResult;
@@ -36,7 +36,7 @@ fn train_by_id(id: &str, include_stops: Option<bool>, st: &State<AppService>) ->
 
     let stops = match include_stops.unwrap_or(false) {
         true => {
-            st.stop_repo.get_for_train(&train.id).map_err(|e| {
+            st.stop_repo.get_for_train_with_station(&train.id).map_err(|e| {
                 status::Custom(Status::InternalServerError, Json(ErrorBody {
                     error: format!("Failed to fetch stops for train {}", train.id),
                     message: e.to_string(),
@@ -44,7 +44,7 @@ fn train_by_id(id: &str, include_stops: Option<bool>, st: &State<AppService>) ->
             })?
         },
         false => {
-            Vec::<Stop>::new()
+            Vec::<StopWithStation>::new()
         }
     };
 

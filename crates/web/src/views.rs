@@ -2,7 +2,7 @@ use chrono::{NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Europe::Berlin;
 use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use wrapper_core::model::{message::Message, station::Station, stop::{split_stops_by_time, Movement, Stop}, train::Train};
+use wrapper_core::model::{message::Message, station::Station, stop::{split_stops_by_time, Movement, Stop, StopWithStation}, train::Train};
 
 #[derive(Clone, Debug)]
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -19,10 +19,14 @@ pub struct TrainView {
 }
 
 impl TrainView {
-    pub fn from_model(train: &Train, stops: &[Stop]) -> Self {
+    pub fn from_model(train: &Train, stops: &[StopWithStation]) -> Self {
         // TODO: Sort stops by time
         let now = Utc::now().with_timezone(&Berlin).naive_local();
-        let (next_stop, next_stops, past_stops) = split_stops_by_time(stops, &now, |stop| StopView::from_model(stop, true));
+        let (next_stop, next_stops, past_stops) = split_stops_by_time(
+            stops,
+            &now,
+            |sws| StopView::from_model(&sws.stop, Some(&sws.station), true)
+        );
 
         TrainView {
             id: train.id.clone(),
@@ -43,13 +47,14 @@ pub struct StopView {
     pub id: String,
     pub train_id: String,
     pub station_id: i32,
+    pub station: Option<Station>,
 
     pub arrival: Option<MovementView>,
     pub departure: Option<MovementView>,
 }
 
 impl StopView {
-    pub fn from_model(stop: &Stop, simple: bool) -> Self {
+    pub fn from_model(stop: &Stop, station: Option<&Station>, simple: bool) -> Self {
         let movement_builder = match simple {
             true => MovementView::from_model_simple,
             false => MovementView::from_model,
@@ -59,6 +64,7 @@ impl StopView {
             id: stop.id.clone(),
             train_id: stop.train_id.clone(),
             station_id: stop.station_id,
+            station: station.cloned(),
             arrival: stop.arrival.as_ref().map(movement_builder),
             departure: stop.departure.as_ref().map(movement_builder),
         }

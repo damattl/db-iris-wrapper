@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, QueryDsl, RunQueryDsl, SelectableHelper};
 
-use crate::db::run_sql_file;
+use crate::{db::run_sql_file, model::stop::StopWithStation};
 
 use super::{db::{model::StopRow, schema::{messages, stations::{self}, stops, trains}, PgPool}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, Port, StationPort, StopPort, TrainPort}};
 
@@ -163,6 +163,21 @@ impl StopRepo {
              .map(|v| v.iter().map(|s| s.to_stop()).collect())?
          )
      }
+
+    fn get_for_train_with_station(&self, train_id: &str) -> Result<Vec<StopWithStation>, Box<dyn std::error::Error>> {
+        let mut conn = self.pool.get()?;
+        let results = stops::table
+                .inner_join(stations::table)
+                .filter(stops::train_id.eq(train_id))
+                .select((StopRow::as_select(), Station::as_select()))
+                .load::<(StopRow, Station)>(&mut conn)
+                .map(|rows| {
+                    rows.into_iter()
+                        .map(|(stop_row, station)| StopWithStation { stop: stop_row.to_stop(), station })
+                        .collect()
+                })?;
+        Ok(results)
+    }
  }
 
 impl Port<Stop, String> for StopRepo {

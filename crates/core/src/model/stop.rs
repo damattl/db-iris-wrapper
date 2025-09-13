@@ -3,6 +3,10 @@ use chrono::{NaiveDateTime};
 use super::train::Train;
 use super::station::Station;
 
+pub trait HasStopGetter {
+    fn get_stop(&self) -> &Stop;
+}
+
 #[derive(Debug, Clone)]
 pub struct Stop {
     pub id: String,
@@ -25,6 +29,25 @@ impl Stop {
     }
 }
 
+impl HasStopGetter for Stop {
+    fn get_stop(&self) -> &Stop {
+        self
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct StopWithStation {
+    pub stop: Stop,
+    pub station: Station,
+}
+
+impl HasStopGetter for StopWithStation {
+    fn get_stop(&self) -> &Stop {
+        &self.stop
+    }
+}
+
+
 #[derive(Debug, Clone)]
 pub struct Movement {
     pub platform: Option<String>,
@@ -44,8 +67,11 @@ impl Movement {
     }
 }
 
-pub fn split_stops_by_time<M>(stops: &[Stop], now: &NaiveDateTime, mapper: fn(stop: &Stop) -> M) -> (Option<M>, Vec<M>, Vec<M>)
-where M: Clone
+
+pub fn split_stops_by_time<S, M>(stops: &[S], now: &NaiveDateTime, mapper: fn(stop: &S) -> M) -> (Option<M>, Vec<M>, Vec<M>)
+where
+    S: HasStopGetter,
+    M: Clone
 {
     let mut earliest: Option<NaiveDateTime> = None;
     let mut next_stop: Option<M> = None;
@@ -58,8 +84,8 @@ where M: Clone
     // TODO: Maybe move to dedicated function
     // TODO: Test this logic!
     for stop in stops {
-        let planned_arrival = stop.arrival.as_ref().and_then(|a| a.planned);
-        let planned_departure = stop.departure.as_ref().and_then(|d| d.planned);
+        let planned_arrival = stop.get_stop().arrival.as_ref().and_then(|a| a.planned);
+        let planned_departure = stop.get_stop().departure.as_ref().and_then(|d| d.planned);
 
         let Some(relevant_time) = planned_arrival.or(planned_departure) else {
             continue;

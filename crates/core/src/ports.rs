@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use crate::model::{message::Message, station::Station, stop::Stop, train::{Train}};
+use crate::model::{message::Message, station::Station, stop::{Stop, StopWithStation}, train::Train};
 
 pub trait Port<T, ID> {
     fn persist(&self, value: &T) -> Result<T, Box<dyn std::error::Error>>;
@@ -23,6 +23,7 @@ pub trait TrainPort: Port<Train, String> + Send + Sync {
 pub trait StopPort: Port<Stop, String> + Send + Sync {
     fn get_for_date(&self, date: &NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
     fn get_for_train(&self, train_id: &str) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
+    fn get_for_train_with_station(&self, train_id: &str) -> Result<Vec<StopWithStation>, Box<dyn std::error::Error>>;
 }
 
 

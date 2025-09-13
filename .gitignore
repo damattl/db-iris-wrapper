@@ -1,3 +1,6 @@
 /target
 .env
 docker-compose.override.yaml
+
+# Ignore app until merged
+app
