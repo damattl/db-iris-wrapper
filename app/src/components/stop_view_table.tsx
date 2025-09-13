@@ -1,5 +1,5 @@
 import type { StopView } from "@/api";
-import { getPlatform, displayTime, sortStopsByTime } from "@/utils/stop";
+import { getPlatform, displayTime, sortByArrival } from "@/utils/stop";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
@@ -21,7 +21,7 @@ const departureTemplate = (stop: StopView) => {
 };
 
 export function StopViewTable({ stops, nextStop }: StopViewTableProps) {
-  sortStopsByTime(stops);
+  sortByArrival(stops);
 
   const rowClassName = (row: StopView) => {
     return {

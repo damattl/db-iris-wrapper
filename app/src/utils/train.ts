@@ -1,9 +1,9 @@
 import type { TrainView } from "@/api";
-import { sortStopsByTime } from "./stop";
+import { sortByArrival } from "./stop";
 
 export function getStartToEnd(train: TrainView) {
   const stops = [...train.next_stops, ...train.past_stops];
-  sortStopsByTime(stops);
+  sortByArrival(stops);
 
   if (stops.length < 2) {
     return "";

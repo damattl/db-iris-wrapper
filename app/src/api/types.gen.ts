@@ -99,6 +99,28 @@ export type TrainsForStationResponses = {
 
 export type TrainsForStationResponse = TrainsForStationResponses[keyof TrainsForStationResponses];
 
+export type StopsForStationData = {
+    body?: never;
+    path: {
+        ds100: string;
+        date: DateParam;
+    };
+    query?: never;
+    url: '/stations/{ds100}/stops/{date}';
+};
+
+export type StopsForStationErrors = {
+    default: ErrorBody;
+};
+
+export type StopsForStationError = StopsForStationErrors[keyof StopsForStationErrors];
+
+export type StopsForStationResponses = {
+    200: Array<StopView>;
+};
+
+export type StopsForStationResponse = StopsForStationResponses[keyof StopsForStationResponses];
+
 export type StationsData = {
     body?: never;
     path?: never;
