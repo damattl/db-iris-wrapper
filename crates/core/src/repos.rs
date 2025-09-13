@@ -69,7 +69,6 @@ impl TrainRepo {
     fn get_by_station_and_date(&self, station: &Station, date: &chrono::NaiveDate) -> Result<Vec<Train>, Box<dyn std::error::Error>> {
         let mut conn = self.pool.get()?;
 
-        // TODO: Get all stops at this train station today,
         let results = trains::table
                 .inner_join(stops::table.on(stops::train_id.eq(trains::id)))
                 .inner_join(stations::table.on(stops::station_id.eq(stations::id)))
@@ -177,6 +176,20 @@ impl StopRepo {
                         .collect()
                 })?;
         Ok(results)
+    }
+
+    fn get_by_station_and_date(&self, station: &Station, date: &chrono::NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>> {
+        let mut conn = self.pool.get()?;
+
+        let results = stops::table
+                .inner_join(trains::table.on(stops::train_id.eq(trains::id)))
+                .inner_join(stations::table.on(stops::station_id.eq(stations::id)))
+                .filter(stations::id.eq(station.id).and(trains::date.eq(date)))
+                .select(stops::all_columns)
+                .load::<StopRow>(&mut conn)
+                .map_err(Box::new)?;
+
+        Ok(results.iter().map(|s| s.to_stop()).collect())
     }
  }
 

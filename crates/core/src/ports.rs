@@ -24,6 +24,8 @@ pub trait StopPort: Port<Stop, String> + Send + Sync {
     fn get_for_date(&self, date: &NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
     fn get_for_train(&self, train_id: &str) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
     fn get_for_train_with_station(&self, train_id: &str) -> Result<Vec<StopWithStation>, Box<dyn std::error::Error>>;
+
+    fn get_by_station_and_date(&self, station: &Station, date: &NaiveDate) -> Result<Vec<Stop>, Box<dyn std::error::Error>>;
 }
 
 

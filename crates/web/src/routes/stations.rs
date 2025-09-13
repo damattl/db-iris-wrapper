@@ -4,7 +4,7 @@ use rocket_okapi::okapi::openapi3::OpenApi;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
 
 use crate::common::JsonResult;
-use crate::views::{StationView, TrainView};
+use crate::views::{StationView, StopView, TrainView};
 use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
 
 #[openapi(tag = "Stations")]
@@ -54,10 +54,30 @@ fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> J
     Ok(Json(trains.iter().map(|t| TrainView::from_model(t, &[])).collect()))
 }
 
+#[openapi(tag = "Stations")]
+#[get("/<ds100>/stops/<date>")] // TODO: Document that stops is empty
+fn stops_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<StopView>> {
+    let station = st.station_repo.get_by_ds100(ds100).map_err(|e| {
+        status::Custom(Status::InternalServerError, Json(ErrorBody {
+            error: "Failed to fetch station info".to_string(),
+            message: e.to_string(),
+        }))
+    })?;
+
+    let trains = st.stop_repo.get_by_station_and_date(&station, &date.0).map_err(|e| {
+        status::Custom(Status::InternalServerError, Json(ErrorBody {
+            error: format!("Failed to fetch stops for {}", station.name),
+            message: e.to_string(),
+        }))
+    })?;
+
+    Ok(Json(trains.iter().map(|s| StopView::from_model(s, None, false)).collect()))
+}
+
 
 pub fn routes() -> (Vec<Route>, OpenApi) {
     openapi_get_routes_spec![
-        station, trains_for_station, stations
+        station, trains_for_station, stops_for_station, stations
     ]
 }
 

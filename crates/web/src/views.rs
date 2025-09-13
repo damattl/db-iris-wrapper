@@ -54,6 +54,7 @@ pub struct StopView {
 }
 
 impl StopView {
+    // TODO: Document what simple does
     pub fn from_model(stop: &Stop, station: Option<&Station>, simple: bool) -> Self {
         let movement_builder = match simple {
             true => MovementView::from_model_simple,
