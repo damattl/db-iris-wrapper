@@ -47,7 +47,7 @@ pub struct StopView {
     pub id: String,
     pub train_id: String,
     pub station_id: i32,
-    pub station: Option<Station>,
+    pub station: Option<StationView>,
 
     pub arrival: Option<MovementView>,
     pub departure: Option<MovementView>,
@@ -64,7 +64,7 @@ impl StopView {
             id: stop.id.clone(),
             train_id: stop.train_id.clone(),
             station_id: stop.station_id,
-            station: station.cloned(),
+            station: station.map(StationView::from_model),
             arrival: stop.arrival.as_ref().map(movement_builder),
             departure: stop.departure.as_ref().map(movement_builder),
         }
