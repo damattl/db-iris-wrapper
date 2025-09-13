@@ -1,9 +1,4 @@
-import {
-  Link,
-  Outlet,
-  createRootRoute,
-  useRouter,
-} from "@tanstack/react-router";
+import { Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { Menubar } from "primereact/menubar";
 
@@ -18,7 +13,7 @@ const RootLayout = () => {
       },
     },
     {
-      label: "Stations",
+      label: "Bahnhöfe",
       icon: "pi pi-fw pi-map-marker",
       command: () => {
         router.navigate({ to: "/stations" });
@@ -27,12 +22,11 @@ const RootLayout = () => {
   ];
 
   return (
-    <>
-      <Menubar model={items} />
-      <hr />
+    <div className="m-2">
+      <Menubar className="mb-2" model={items} />
       <Outlet />
       <TanStackRouterDevtools />
-    </>
+    </div>
   );
 };
 

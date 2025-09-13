@@ -1418,8 +1418,8 @@ __metadata:
   linkType: hard
 
 "@tanstack/router-plugin@npm:^1.131.41":
-  version: 1.131.41
-  resolution: "@tanstack/router-plugin@npm:1.131.41"
+  version: 1.131.43
+  resolution: "@tanstack/router-plugin@npm:1.131.43"
   dependencies:
     "@babel/core": ^7.27.7
     "@babel/plugin-syntax-jsx": ^7.27.1
@@ -1452,7 +1452,7 @@ __metadata:
       optional: true
     webpack:
       optional: true
-  checksum: d303985534e38ca48d8e7329d4f215d41ab4a0dcf8c7b6629ab08d0a57b650bc83579ea739651ad9366079599e630c130416c5fd135e85be9fd18dff18726593
+  checksum: 116b17381fc7979848cc89b666e60a7edfba9ec616bb198e5cffa3a2d26a68f4d08d7fb8ed3b02aacdf972618e835ff717626ab22ee34e6c071c0e6e17a17253
   languageName: node
   linkType: hard
 
@@ -1504,6 +1504,15 @@ __metadata:
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
   checksum: 97ed0cb44d4070aecea772b7b2e2ed971e10c81ec87dd4ecc160322ffa55ff330dace1793489540e3e318d90942064bb697cc0f8989391797792d919737b3b98
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^24.3.3":
+  version: 24.3.3
+  resolution: "@types/node@npm:24.3.3"
+  dependencies:
+    undici-types: ~7.10.0
+  checksum: b67244aa37ab53690ac6f3565f06ad2e3ca5fae78ef3f60431e1c78e014426106643d3dc31d6f00b62aa8051cd1360178cafb6ce6a49afa5dcecba8339e23462
   languageName: node
   linkType: hard
 
@@ -1793,13 +1802,17 @@ __metadata:
     "@tanstack/react-router": ^1.131.41
     "@tanstack/react-router-devtools": ^1.131.42
     "@tanstack/router-plugin": ^1.131.41
+    "@types/node": ^24.3.3
     "@types/react": ^19.1.10
     "@types/react-dom": ^19.1.7
     "@vitejs/plugin-react-swc": ^4.0.0
+    autoprefixer: ^10.4.21
     eslint: ^9.33.0
     eslint-plugin-react-hooks: ^5.2.0
     eslint-plugin-react-refresh: ^0.4.20
     globals: ^16.3.0
+    postcss: ^8.5.6
+    primeicons: ^7.0.0
     primereact: ^10.9.7
     react: ^19.1.1
     react-dom: ^19.1.1
@@ -1823,6 +1836,24 @@ __metadata:
   dependencies:
     tslib: ^2.0.1
   checksum: 21c186da9fdb1d8087b1b7dabbc4059f91aa5a1e593a9776b4393cc1eaa857e741b2dda678d20e34b16727b78fef3ab59cf8f0c75ed1ba649c78fe194e5c114b
+  languageName: node
+  linkType: hard
+
+"autoprefixer@npm:^10.4.21":
+  version: 10.4.21
+  resolution: "autoprefixer@npm:10.4.21"
+  dependencies:
+    browserslist: ^4.24.4
+    caniuse-lite: ^1.0.30001702
+    fraction.js: ^4.3.7
+    normalize-range: ^0.1.2
+    picocolors: ^1.1.1
+    postcss-value-parser: ^4.2.0
+  peerDependencies:
+    postcss: ^8.1.0
+  bin:
+    autoprefixer: bin/autoprefixer
+  checksum: 11770ce635a0520e457eaf2ff89056cd57094796a9f5d6d9375513388a5a016cd947333dcfd213b822fdd8a0b43ce68ae4958e79c6f077c41d87444c8cca0235
   languageName: node
   linkType: hard
 
@@ -1889,7 +1920,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"browserslist@npm:^4.24.0":
+"browserslist@npm:^4.24.0, browserslist@npm:^4.24.4":
   version: 4.26.0
   resolution: "browserslist@npm:4.26.0"
   dependencies:
@@ -1965,7 +1996,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001741":
+"caniuse-lite@npm:^1.0.30001702, caniuse-lite@npm:^1.0.30001741":
   version: 1.0.30001741
   resolution: "caniuse-lite@npm:1.0.30001741"
   checksum: 0f2e90e1418a0b35923735420a0a0f9d2aa91eb6e0e2ae955e386155b402892ed4aa9996aae644b9f0cf2cf6a2af52c9467d4f8fc1d1710e8e4c961f12bdec67
@@ -2636,6 +2667,13 @@ __metadata:
     cross-spawn: ^7.0.6
     signal-exit: ^4.0.1
   checksum: b2c1a6fc0bf0233d645d9fefdfa999abf37db1b33e5dab172b3cbfb0662b88bfbd2c9e7ab853533d199050ec6b65c03fcf078fc212d26e4990220e98c6930eef
+  languageName: node
+  linkType: hard
+
+"fraction.js@npm:^4.3.7":
+  version: 4.3.7
+  resolution: "fraction.js@npm:4.3.7"
+  checksum: e1553ae3f08e3ba0e8c06e43a3ab20b319966dfb7ddb96fd9b5d0ee11a66571af7f993229c88ebbb0d4a816eb813a24ed48207b140d442a8f76f33763b8d1f3f
   languageName: node
   linkType: hard
 
@@ -3508,6 +3546,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"normalize-range@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "normalize-range@npm:0.1.2"
+  checksum: 9b2f14f093593f367a7a0834267c24f3cb3e887a2d9809c77d8a7e5fd08738bcd15af46f0ab01cc3a3d660386f015816b5c922cea8bf2ee79777f40874063184
+  languageName: node
+  linkType: hard
+
 "nypm@npm:^0.5.4":
   version: 0.5.4
   resolution: "nypm@npm:0.5.4"
@@ -3682,6 +3727,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"postcss-value-parser@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "postcss-value-parser@npm:4.2.0"
+  checksum: 819ffab0c9d51cf0acbabf8996dffbfafbafa57afc0e4c98db88b67f2094cb44488758f06e5da95d7036f19556a4a732525e84289a425f4f6fd8e412a9d7442f
+  languageName: node
+  linkType: hard
+
 "postcss@npm:^8.5.6":
   version: 8.5.6
   resolution: "postcss@npm:8.5.6"
@@ -3706,6 +3758,13 @@ __metadata:
   bin:
     prettier: bin/prettier.cjs
   checksum: 0206f5f437892e8858f298af8850bf9d0ef1c22e21107a213ba56bfb9c2387a2020bfda244a20161d8e3dad40c6b04101609a55d370dece53d0a31893b64f861
+  languageName: node
+  linkType: hard
+
+"primeicons@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "primeicons@npm:7.0.0"
+  checksum: bb7c2fa71d1039f58e52b7ffaa08936c8fc1b10cf462aa2bd769fb16ebd68094a5f0eb51cc362bf49e48392b2fbc2c0754175a72830db800572e64b69c06a03b
   languageName: node
   linkType: hard
 
@@ -4336,6 +4395,13 @@ __metadata:
   bin:
     uglifyjs: bin/uglifyjs
   checksum: 7ed6272fba562eb6a3149cfd13cda662f115847865c03099e3995a0e7a910eba37b82d4fccf9e88271bb2bcbe505bb374967450f433c17fa27aa36d94a8d0553
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~7.10.0":
+  version: 7.10.0
+  resolution: "undici-types@npm:7.10.0"
+  checksum: 6917fcd8c80963919fe918952f9243a6749af0e3f759a39f8d2c2486144a66c86ae4125aebbce700b636cb1dcd45e85eb8c49c60d60738a97b63f0e89ef9b053
   languageName: node
   linkType: hard
 

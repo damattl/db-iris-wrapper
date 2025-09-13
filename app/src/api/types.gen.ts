@@ -29,6 +29,7 @@ export type StopView = {
     id: string;
     train_id: string;
     station_id: number;
+    station?: StationView | null;
     arrival?: MovementView | null;
     departure?: MovementView | null;
 };

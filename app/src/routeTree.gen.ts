@@ -9,65 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StationsRouteImport } from './routes/stations'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as TrainsDs100DateRouteImport } from './routes/trains.$ds100.$date'
+import { Route as StationsIndexRouteImport } from './routes/stations/index'
+import { Route as TrainsIdRouteImport } from './routes/trains/$id'
+import { Route as StationsDs100DateRouteImport } from './routes/stations/$ds100.$date'
 
-const StationsRoute = StationsRouteImport.update({
-  id: '/stations',
-  path: '/stations',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TrainsDs100DateRoute = TrainsDs100DateRouteImport.update({
-  id: '/trains/$ds100/$date',
-  path: '/trains/$ds100/$date',
+const StationsIndexRoute = StationsIndexRouteImport.update({
+  id: '/stations/',
+  path: '/stations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrainsIdRoute = TrainsIdRouteImport.update({
+  id: '/trains/$id',
+  path: '/trains/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StationsDs100DateRoute = StationsDs100DateRouteImport.update({
+  id: '/stations/$ds100/$date',
+  path: '/stations/$ds100/$date',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/stations': typeof StationsRoute
-  '/trains/$ds100/$date': typeof TrainsDs100DateRoute
+  '/trains/$id': typeof TrainsIdRoute
+  '/stations': typeof StationsIndexRoute
+  '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/stations': typeof StationsRoute
-  '/trains/$ds100/$date': typeof TrainsDs100DateRoute
+  '/trains/$id': typeof TrainsIdRoute
+  '/stations': typeof StationsIndexRoute
+  '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/stations': typeof StationsRoute
-  '/trains/$ds100/$date': typeof TrainsDs100DateRoute
+  '/trains/$id': typeof TrainsIdRoute
+  '/stations/': typeof StationsIndexRoute
+  '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/stations' | '/trains/$ds100/$date'
+  fullPaths: '/' | '/trains/$id' | '/stations' | '/stations/$ds100/$date'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/stations' | '/trains/$ds100/$date'
-  id: '__root__' | '/' | '/stations' | '/trains/$ds100/$date'
+  to: '/' | '/trains/$id' | '/stations' | '/stations/$ds100/$date'
+  id: '__root__' | '/' | '/trains/$id' | '/stations/' | '/stations/$ds100/$date'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  StationsRoute: typeof StationsRoute
-  TrainsDs100DateRoute: typeof TrainsDs100DateRoute
+  TrainsIdRoute: typeof TrainsIdRoute
+  StationsIndexRoute: typeof StationsIndexRoute
+  StationsDs100DateRoute: typeof StationsDs100DateRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/stations': {
-      id: '/stations'
-      path: '/stations'
-      fullPath: '/stations'
-      preLoaderRoute: typeof StationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -75,11 +78,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/trains/$ds100/$date': {
-      id: '/trains/$ds100/$date'
-      path: '/trains/$ds100/$date'
-      fullPath: '/trains/$ds100/$date'
-      preLoaderRoute: typeof TrainsDs100DateRouteImport
+    '/stations/': {
+      id: '/stations/'
+      path: '/stations'
+      fullPath: '/stations'
+      preLoaderRoute: typeof StationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trains/$id': {
+      id: '/trains/$id'
+      path: '/trains/$id'
+      fullPath: '/trains/$id'
+      preLoaderRoute: typeof TrainsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stations/$ds100/$date': {
+      id: '/stations/$ds100/$date'
+      path: '/stations/$ds100/$date'
+      fullPath: '/stations/$ds100/$date'
+      preLoaderRoute: typeof StationsDs100DateRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -87,8 +104,9 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  StationsRoute: StationsRoute,
-  TrainsDs100DateRoute: TrainsDs100DateRoute,
+  TrainsIdRoute: TrainsIdRoute,
+  StationsIndexRoute: StationsIndexRoute,
+  StationsDs100DateRoute: StationsDs100DateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

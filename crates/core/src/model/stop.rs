@@ -26,6 +26,13 @@ impl Stop {
 }
 
 #[derive(Debug, Clone)]
+pub struct StopWithStation {
+    pub stop: Stop,
+    pub station: Station,
+}
+
+
+#[derive(Debug, Clone)]
 pub struct Movement {
     pub platform: Option<String>,
     pub planned: Option<NaiveDateTime>,
