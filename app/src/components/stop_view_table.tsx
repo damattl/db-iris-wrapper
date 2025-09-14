@@ -31,6 +31,7 @@ export function StopViewTable({ stops, nextStop }: StopViewTableProps) {
 
   return (
     <DataTable
+      emptyMessage="Keine Einträge vorhanden"
       rowClassName={rowClassName}
       size="small"
       value={stops}

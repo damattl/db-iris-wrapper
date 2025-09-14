@@ -1,19 +1,16 @@
 import type { MovementView, StopView } from "@/api";
+import { getTimestamp } from "./date";
 
 export function getPlatform(stop: StopView): string {
   return stop.arrival?.platform ?? stop.departure?.platform ?? "Unbekannt";
 }
 
-export function getArrivalTS(stop: StopView): number | null {
-  return stop.arrival?.planned
-    ? new Date(stop.arrival?.planned).getTime()
-    : null;
+export function getArrivalTS(stop: StopView): number | null | undefined {
+  return getTimestamp(stop.arrival?.planned);
 }
 
-export function getDepartureTS(stop: StopView): number | null {
-  return stop.departure?.planned
-    ? new Date(stop.departure?.planned).getTime()
-    : null;
+export function getDepartureTS(stop: StopView): number | null | undefined {
+  return getTimestamp(stop.departure?.planned);
 }
 
 export function arrivalComparer(a: StopView, b: StopView): number {

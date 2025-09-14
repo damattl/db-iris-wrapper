@@ -1,9 +1,14 @@
+import { toastRefAtom } from "@/atoms";
 import { Outlet, createRootRoute, useRouter } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { useAtom } from "jotai";
 import { Menubar } from "primereact/menubar";
+import { Toast } from "primereact/toast";
 
 const RootLayout = () => {
   const router = useRouter();
+  const [toastRef] = useAtom(toastRefAtom);
+
   const items = [
     {
       label: "Home",
@@ -19,13 +24,28 @@ const RootLayout = () => {
         router.navigate({ to: "/stations" });
       },
     },
+    {
+      label: "Züge",
+      icon: "pi pi-fw pi-database",
+      command: () => {
+        router.navigate({ to: "/trains" });
+      },
+    },
+    {
+      label: "Meldungen",
+      icon: "pi pi-fw pi-envelope",
+      command: () => {
+        router.navigate({ to: "/messages" });
+      },
+    },
   ];
 
   return (
-    <div className="m-2">
+    <div className="m-2 mb-20">
       <Menubar className="mb-2" model={items} />
       <Outlet />
       <TanStackRouterDevtools />
+      <Toast ref={toastRef} />
     </div>
   );
 };

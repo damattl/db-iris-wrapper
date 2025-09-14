@@ -76,6 +76,7 @@ function RouteComponent() {
 
   return (
     <DataTable
+      emptyMessage="Keine Einträge vorhanden"
       onRowClick={handleRowClick}
       filters={filters}
       globalFilterFields={["name", "ds100"]}
@@ -83,6 +84,9 @@ function RouteComponent() {
       value={data}
       tableStyle={{ minWidth: "50rem" }}
       header={header}
+      paginator
+      rows={10}
+      rowsPerPageOptions={[10, 25, 50]}
       rowHover
     >
       <Column field="id" header="ID"></Column>

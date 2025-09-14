@@ -9,6 +9,7 @@ export type StationView = {
 };
 
 export type ErrorBody = {
+    code: number;
     error: string;
     message: string;
 };

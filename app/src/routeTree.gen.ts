@@ -10,7 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as TrainsIndexRouteImport } from './routes/trains/index'
 import { Route as StationsIndexRouteImport } from './routes/stations/index'
+import { Route as MessagesIndexRouteImport } from './routes/messages/index'
 import { Route as TrainsIdRouteImport } from './routes/trains/$id'
 import { Route as StationsDs100DateRouteImport } from './routes/stations/$ds100.$date'
 
@@ -19,9 +21,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrainsIndexRoute = TrainsIndexRouteImport.update({
+  id: '/trains/',
+  path: '/trains/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StationsIndexRoute = StationsIndexRouteImport.update({
   id: '/stations/',
   path: '/stations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrainsIdRoute = TrainsIdRouteImport.update({
@@ -38,34 +50,61 @@ const StationsDs100DateRoute = StationsDs100DateRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/trains/$id': typeof TrainsIdRoute
+  '/messages': typeof MessagesIndexRoute
   '/stations': typeof StationsIndexRoute
+  '/trains': typeof TrainsIndexRoute
   '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/trains/$id': typeof TrainsIdRoute
+  '/messages': typeof MessagesIndexRoute
   '/stations': typeof StationsIndexRoute
+  '/trains': typeof TrainsIndexRoute
   '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/trains/$id': typeof TrainsIdRoute
+  '/messages/': typeof MessagesIndexRoute
   '/stations/': typeof StationsIndexRoute
+  '/trains/': typeof TrainsIndexRoute
   '/stations/$ds100/$date': typeof StationsDs100DateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/trains/$id' | '/stations' | '/stations/$ds100/$date'
+  fullPaths:
+    | '/'
+    | '/trains/$id'
+    | '/messages'
+    | '/stations'
+    | '/trains'
+    | '/stations/$ds100/$date'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/trains/$id' | '/stations' | '/stations/$ds100/$date'
-  id: '__root__' | '/' | '/trains/$id' | '/stations/' | '/stations/$ds100/$date'
+  to:
+    | '/'
+    | '/trains/$id'
+    | '/messages'
+    | '/stations'
+    | '/trains'
+    | '/stations/$ds100/$date'
+  id:
+    | '__root__'
+    | '/'
+    | '/trains/$id'
+    | '/messages/'
+    | '/stations/'
+    | '/trains/'
+    | '/stations/$ds100/$date'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TrainsIdRoute: typeof TrainsIdRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
   StationsIndexRoute: typeof StationsIndexRoute
+  TrainsIndexRoute: typeof TrainsIndexRoute
   StationsDs100DateRoute: typeof StationsDs100DateRoute
 }
 
@@ -78,11 +117,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trains/': {
+      id: '/trains/'
+      path: '/trains'
+      fullPath: '/trains'
+      preLoaderRoute: typeof TrainsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stations/': {
       id: '/stations/'
       path: '/stations'
       fullPath: '/stations'
       preLoaderRoute: typeof StationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/trains/$id': {
@@ -105,7 +158,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TrainsIdRoute: TrainsIdRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
   StationsIndexRoute: StationsIndexRoute,
+  TrainsIndexRoute: TrainsIndexRoute,
   StationsDs100DateRoute: StationsDs100DateRoute,
 }
 export const routeTree = rootRouteImport
