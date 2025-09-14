@@ -63,6 +63,7 @@ fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> J
 fn stops_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<StopView>> {
     let station = st.station_repo.get_by_ds100(ds100).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch station info".to_string(),
             message: e.to_string(),
         }))
@@ -70,6 +71,7 @@ fn stops_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> Js
 
     let trains = st.stop_repo.get_by_station_and_date(&station, &date.0).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: format!("Failed to fetch stops for {}", station.name),
             message: e.to_string(),
         }))
