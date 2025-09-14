@@ -37,6 +37,7 @@ function RouteComponent() {
   const query = useQuery({
     ...queryOptions,
     enabled: queryParams != null,
+    refetchOnWindowFocus: false,
     queryFn: async (params) => {
       const result = await queryOptions.queryFn!(params);
       toastRef.current?.show({
