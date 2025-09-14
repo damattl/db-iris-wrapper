@@ -3270,6 +3270,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "chrono-tz",
+ "log",
  "rocket",
  "rocket_cors",
  "rocket_okapi",

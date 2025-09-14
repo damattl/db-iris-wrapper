@@ -1,8 +1,8 @@
-use rocket::{Build, Rocket};
+use rocket::{fs::{FileServer}, Build, Rocket};
 use rocket_cors::{AllowedHeaders, AllowedOrigins, CorsOptions};
 use rocket_okapi::{mount_endpoints_and_merged_docs, settings::OpenApiSettings, swagger_ui::{make_swagger_ui, SwaggerUIConfig}};
 
-use crate::service::AppService;
+use crate::{routes::index::get_static_path, service::AppService};
 
 pub mod service;
 
@@ -33,12 +33,14 @@ pub fn build(service: AppService) -> Rocket<Build> {
         "/messages" => routes::messages::routes()
     };
     builder
-        .mount("/", routes::index::routes())
         .mount(
-        "/v1/swagger",
-        make_swagger_ui(&SwaggerUIConfig {
-            url: "../openapi.json".to_owned(),
-            ..Default::default()
-        }),
-    )
+            "/v1/swagger",
+            make_swagger_ui(&SwaggerUIConfig {
+                url: "../openapi.json".to_owned(),
+                ..Default::default()
+            }),
+        )
+        .mount("/", FileServer::from(get_static_path()).rank(10))
+        .mount("/", routes::index::routes())
+
 }

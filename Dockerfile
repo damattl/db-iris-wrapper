@@ -1,5 +1,16 @@
-# --- Build stage ---
-FROM rust:1.86-slim AS builder
+# Build React
+FROM node:22-alpine AS react-builder
+WORKDIR /app
+
+COPY app/package.json app/yarn.lock ./
+
+RUN yarn install
+
+COPY app/ ./
+RUN yarn build
+
+# Build Rust
+FROM rust:1.86-slim AS rust-builder
 
 RUN apt-get update \
     && apt-get install -y libpq-dev pkg-config \
@@ -16,7 +27,7 @@ RUN cargo build --all --release
 RUN ls -l
 RUN ls -l ./target/release
 
-# --- Runtime stage ---
+# Runtime
 FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update && apt-get install -y \
@@ -26,9 +37,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/db-iris-wrapper /usr/local/bin/db-iris-wrapper
+COPY --from=rust-builder /app/target/release/db-iris-wrapper /usr/local/bin/db-iris-wrapper
+COPY --from=react-builder /app/dist/ ./static
 
-# TODO: Make optiona
+RUN ls /usr/local/bin/
+RUN ls ./
+
+# TODO: Make optional
 ENV STATIONS_SRC=SQL:/etc/db-iris-wrapper/stations.sql
 COPY stations.sql /etc/db-iris-wrapper/stations.sql
 

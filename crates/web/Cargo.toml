@@ -12,3 +12,4 @@ rocket_okapi = { workspace = true }
 schemars = { workspace = true }
 chrono-tz = { workspace = true }
 rocket_cors = "0.6.0"
+log = {workspace = true}

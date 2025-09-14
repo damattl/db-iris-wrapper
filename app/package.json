@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build-rs": "tsc -b && vite build --outDir ../crates/web/static",
     "lint": "eslint .",
     "openapi-ts": "openapi-ts",
     "preview": "vite preview"
