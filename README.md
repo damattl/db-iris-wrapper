@@ -22,5 +22,6 @@ If the train arrived at the stop at 11.09.2025 19:22 CEST this is stored in the 
 - [ ] Add UI
 - [ ] Document deployment
 - [ ] Make querying the api more efficient (always query 6 hours in advance)
+- [ ] Merge trains that go over the date border (train 422-250912 that travels from 22:00 - 02:00 is the same as 422-250913)
 
 This is my first rust project, it took me about 40 hours so far to write it
