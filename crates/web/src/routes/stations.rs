@@ -12,6 +12,7 @@ use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
 fn stations(st: &State<AppService>) -> JsonResult<Vec<StationView>> {
     let stations = st.station_repo.get_all().map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch station infos".to_string(),
             message: e.to_string(),
         }))
@@ -28,6 +29,7 @@ fn station(ds100: &str, st: &State<AppService>) -> JsonResult<StationView> {
     match station {
         Ok(station) => Ok(Json(StationView::from_model(&station))),
         Err(err) => Err(status::Custom(Status::NotFound, Json(ErrorBody {
+            code: 404,
             error: "Station not found".to_string(),
             message: err.to_string(),
         }))), // TODO: Better error message
@@ -39,6 +41,7 @@ fn station(ds100: &str, st: &State<AppService>) -> JsonResult<StationView> {
 fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> JsonResult<Vec<TrainView>> {
     let station = st.station_repo.get_by_ds100(ds100).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch station infos".to_string(),
             message: e.to_string(),
         }))
@@ -46,6 +49,7 @@ fn trains_for_station(ds100: &str, date: DateParam, st: &State<AppService>) -> J
 
     let trains = st.train_repo.get_by_station_and_date(&station, &date.0).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch trains".to_string(),
             message: e.to_string(),
         }))

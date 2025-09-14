@@ -14,6 +14,7 @@ use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
 fn trains(date: DateParam, st: &State<AppService>) -> JsonResult<Vec<TrainView>> {
     let trains = st.train_repo.get_by_date(&date.0).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch trains".to_string(),
             message: e.to_string(),
         }))
@@ -29,6 +30,7 @@ fn trains(date: DateParam, st: &State<AppService>) -> JsonResult<Vec<TrainView>>
 fn train_by_id(id: &str, include_stops: Option<bool>, st: &State<AppService>) -> JsonResult<TrainView> {
     let train = st.train_repo.get_by_id(id.to_string()).map_err(|e| {
         status::Custom(Status::NotFound, Json(ErrorBody {
+            code: 404,
             error: "Train not found".to_string(),
             message: e.to_string(),
         }))
@@ -38,6 +40,7 @@ fn train_by_id(id: &str, include_stops: Option<bool>, st: &State<AppService>) ->
         true => {
             st.stop_repo.get_for_train_with_station(&train.id).map_err(|e| {
                 status::Custom(Status::InternalServerError, Json(ErrorBody {
+                    code: 500,
                     error: format!("Failed to fetch stops for train {}", train.id),
                     message: e.to_string(),
                 }))

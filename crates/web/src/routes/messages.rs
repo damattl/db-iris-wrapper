@@ -14,6 +14,7 @@ use crate::{common::{error::ErrorBody, params::DateParam}, service::AppService};
 fn messages_for_date_and_code(date: DateParam, code: i32, st: &State<AppService>) -> JsonResult<Vec<MessageView>> {
     let messages = st.message_repo.get_by_date_and_code(&date.0, code).map_err(|e| {
         status::Custom(Status::InternalServerError, Json(ErrorBody {
+            code: 500,
             error: "Failed to fetch messages".to_string(),
             message: e.to_string(),
         }))
@@ -29,6 +30,7 @@ fn messages_for_train(train_id: &str, st: &State<AppService>) -> JsonResult<Vec<
         .get_by_train_id(train_id)
         .map_err(|e| {
             status::Custom(Status::NotFound, Json(ErrorBody {
+                code: 404,
                 error: "Messages not found".to_string(),
                 message: e.to_string(),
             }))
