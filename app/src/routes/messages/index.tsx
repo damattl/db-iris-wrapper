@@ -1,4 +1,8 @@
-import { messagesForDateAndCodeOptions } from "@/api/@tanstack/react-query.gen";
+import type { StatusCodeView } from "@/api";
+import {
+  messagesForDateAndCodeOptions,
+  statusCodesOptions,
+} from "@/api/@tanstack/react-query.gen";
 import { toastRefAtom } from "@/atoms";
 import { apiClient } from "@/client";
 import { MessageViewTable } from "@/components/message_view_table";
@@ -8,7 +12,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAtom } from "jotai";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
-import { InputNumber } from "primereact/inputnumber";
+import { Dropdown } from "primereact/dropdown";
 import { useState } from "react";
 
 export const Route = createFileRoute("/messages/")({
@@ -16,8 +20,8 @@ export const Route = createFileRoute("/messages/")({
 });
 
 function RouteComponent() {
-  const [date, setDate] = useState<Date | null>(null);
-  const [code, setCode] = useState<number | null>(null);
+  const [date, setDate] = useState<Date | null>(new Date());
+  const [code, setCode] = useState<StatusCodeView | null>(null);
 
   const [queryParams, setQueryParams] = useState<{
     date: Date;
@@ -48,6 +52,14 @@ function RouteComponent() {
     },
   });
 
+  const { data: codes } = useQuery({
+    ...statusCodesOptions({
+      client: apiClient,
+    }),
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
+
   if (query.isLoading) return <p>Loading...</p>;
   if (query.isError) return <p>Error: {(query.error as Error).message}</p>;
 
@@ -55,7 +67,7 @@ function RouteComponent() {
     if (date && code) {
       setQueryParams({
         date: date,
-        code: code,
+        code: code.code,
       });
       console.debug("Searching with:", { date, code });
     }
@@ -75,13 +87,14 @@ function RouteComponent() {
           dateFormat="dd.mm.yy"
         />
 
-        <InputNumber
+        <Dropdown
           value={code}
           onChange={(e) => setCode(e.value)}
-          min={1}
-          max={100}
+          options={codes}
+          optionLabel="long_text"
+          editable
           className="md:w-auto w-full"
-          placeholder="Code"
+          placeholder="Status"
         />
 
         <Button
@@ -92,7 +105,10 @@ function RouteComponent() {
         />
       </div>
 
-      <MessageViewTable messages={query.data ?? []}></MessageViewTable>
+      <MessageViewTable
+        codes={codes ?? []}
+        messages={query.data ?? []}
+      ></MessageViewTable>
     </div>
   );
 }

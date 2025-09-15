@@ -57,6 +57,12 @@ export type MessageView = {
     m_type?: string | null;
 };
 
+export type StatusCodeView = {
+    code: number;
+    c_type?: string | null;
+    long_text: string;
+};
+
 export type StationData = {
     body?: never;
     path: {
@@ -251,6 +257,25 @@ export type MessagesForTrainResponses = {
 };
 
 export type MessagesForTrainResponse = MessagesForTrainResponses[keyof MessagesForTrainResponses];
+
+export type StatusCodesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/status_codes/';
+};
+
+export type StatusCodesErrors = {
+    default: ErrorBody;
+};
+
+export type StatusCodesError = StatusCodesErrors[keyof StatusCodesErrors];
+
+export type StatusCodesResponses = {
+    200: Array<StatusCodeView>;
+};
+
+export type StatusCodesResponse = StatusCodesResponses[keyof StatusCodesResponses];
 
 export type ClientOptions = {
     baseUrl: `${string}://${string}/v1` | (string & {});

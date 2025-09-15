@@ -1,13 +1,14 @@
-import type { MessageView } from "@/api";
+import type { MessageView, StatusCodeView } from "@/api";
 import { useRouter } from "@tanstack/react-router";
 import { Column } from "primereact/column";
 import { DataTable, type DataTableRowClickEvent } from "primereact/datatable";
 
 interface MessageViewTableProps {
   messages: MessageView[];
+  codes: StatusCodeView[];
 }
 
-export function MessageViewTable({ messages }: MessageViewTableProps) {
+export function MessageViewTable({ messages, codes }: MessageViewTableProps) {
   const router = useRouter();
   /*
   export type MessageView = {
@@ -43,7 +44,12 @@ export function MessageViewTable({ messages }: MessageViewTableProps) {
         tableStyle={{ minWidth: "50rem" }}
       >
         <Column field="code" header="Code"></Column>
-
+        <Column
+          body={(row: MessageView) => {
+            return codes.find((c) => c.code === row.code)?.long_text || "";
+          }}
+          header="Beschreibung"
+        ></Column>
         <Column field="timestamp" header="Timestamp"></Column>
         <Column field="valid_from" header="Gültig ab"></Column>
         <Column field="valid_to" header="Gültig bis"></Column>
