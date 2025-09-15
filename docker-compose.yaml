@@ -17,7 +17,10 @@ services:
         #ports:
         #    - "5455:5432"
     server:
-        build: .
+        build:
+            context: .
+            args:
+                VITE_API_BASE_URL: http://localhost:8000/v1
         restart: always
         # set shared memory limit when using docker-compose
         shm_size: 128mb

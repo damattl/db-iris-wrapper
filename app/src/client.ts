@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createClient } from "./api/client";
 
 export const apiClient = createClient({
-  baseUrl: "https://db-iris.it-solutions-mayer.de/v1",
+  baseUrl: import.meta.env.VITE_API_BASE_URL,
 });
 
 export const queryClient = new QueryClient({

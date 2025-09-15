@@ -2,6 +2,10 @@
 FROM node:22-alpine AS react-builder
 WORKDIR /app
 
+# external build args
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 COPY app/package.json app/yarn.lock ./
 
 RUN yarn install
