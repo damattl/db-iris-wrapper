@@ -90,7 +90,7 @@ function RouteComponent() {
         <Dropdown
           value={code}
           onChange={(e) => setCode(e.value)}
-          options={codes}
+          options={codes?.filter((code) => code.code != 0)}
           optionLabel="long_text"
           editable
           className="md:w-auto w-full"
