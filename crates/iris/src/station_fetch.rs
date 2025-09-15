@@ -1,10 +1,10 @@
 use std::{fs};
 
 use quick_xml::de::from_str;
-use crate::station_dto::{GetStationError, GetStationInfosError, IRISStation, StationInfo, StationInfosPayload, Stations};
+use crate::{dto::IRISStationError, station_dto::{IRISStation, StationInfo, StationInfosPayload, Stations}};
 
 
-pub fn get_station(id: &str) -> Result<IRISStation, GetStationError> {
+pub fn get_station(id: &str) -> Result<IRISStation, IRISStationError> {
     let body: String = ureq::get(&format!(
         "https://iris.noncd.db.de/iris-tts/timetable/station/{}",
         id
@@ -20,13 +20,13 @@ pub fn get_station(id: &str) -> Result<IRISStation, GetStationError> {
         .stations
         .into_iter()
         .find(|s| s.ds100 == id)
-        .ok_or_else(|| GetStationError::NotFound(id.to_owned()))?;
+        .ok_or_else(|| IRISStationError::NotFound(id.to_owned()))?;
 
     Ok(station)
 }
 
 
-pub fn get_station_infos(path: &str, from_api: bool) -> Result<Vec<StationInfo>, GetStationInfosError> {
+pub fn get_station_infos(path: &str, from_api: bool) -> Result<Vec<StationInfo>, IRISStationError> {
     info!("Fetching stations from bahnvorhersage");
     let body = match from_api {
         true => {

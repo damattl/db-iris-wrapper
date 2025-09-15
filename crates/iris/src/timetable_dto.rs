@@ -3,7 +3,7 @@ use serde::{Deserialize, Deserializer, Serialize};
 
 
 #[derive(thiserror::Error, Debug)]
-pub enum GetTimetableError {
+pub enum IRISTimetableError {
     #[error(transparent)]
     Network(#[from] Box<ureq::Error>),
     #[error(transparent)]

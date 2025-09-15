@@ -10,24 +10,21 @@ use chrono::Utc;
 use chrono_tz::Europe::Berlin;
 
 use crate::{
-    ports::{MessagePort, StationPort, StopPort, TrainPort},
-    usecases::{
-        import_iris_data, import_iris_data_for_station_by_ds100, import_iris_messages, import_iris_messages_for_station_by_ds100, import_station_data
-    },
+    import::{
+        import_iris_data, import_iris_data_for_station_by_ds100, import_iris_messages, import_iris_messages_for_station_by_ds100, import_station_data, import_status_codes
+    }, ports::{MessagePort, StationPort, StatusCodePort, StopPort, TrainPort}
 };
 
 /// Periodic importer orchestrating station discovery, timetables, and messages.
 ///
 /// See the module-level docs for scheduling, shutdown, and time semantics.
 pub struct ImportService {
-    /// Repository for station persistence and lookup.
+
     pub station_repo: Arc<dyn StationPort>,
-    /// Repository for message persistence and lookup.
     pub message_repo: Arc<dyn MessagePort>,
-    /// Repository for train persistence and lookup.
     pub train_repo: Arc<dyn TrainPort>,
-    /// Repository for stop persistence and lookup.
     pub stop_repo: Arc<dyn StopPort>,
+    pub status_code_repo: Arc<dyn StatusCodePort>,
 
     /// Cooperative shutdown flag checked by the background worker.
     ///
@@ -47,12 +44,14 @@ impl ImportService {
         message_repo: Arc<dyn MessagePort>,
         train_repo: Arc<dyn TrainPort>,
         stop_repo: Arc<dyn StopPort>,
+        status_code_repo: Arc<dyn StatusCodePort>,
     ) -> Self {
         Self {
             station_repo,
             message_repo,
             train_repo,
             stop_repo,
+            status_code_repo,
             stop_ch: Arc::new(AtomicBool::new(false)),
         }
     }
@@ -79,6 +78,7 @@ impl ImportService {
     ///   request a graceful stop.
     pub fn start(&self) {
         import_station_data(self.station_repo.as_ref()).unwrap(); // TODO: Do this once every day
+        import_status_codes(self.status_code_repo.as_ref()).unwrap();
 
         let stop_ch_clone = self.stop_ch.clone();
         let station_repo_clone = self.station_repo.clone();

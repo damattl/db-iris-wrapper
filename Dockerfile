@@ -47,6 +47,9 @@ RUN ls ./
 ENV STATIONS_SRC=SQL:/etc/db-iris-wrapper/stations.sql
 COPY stations.sql /etc/db-iris-wrapper/stations.sql
 
+ENV STATUS_CODES_SRC=EXCEL:/etc/db-iris-wrapper/codes.xlsx
+COPY codes.xlsx /etc/db-iris-wrapper/codes.xlsx
+
 ENV ROCKET_CONFIG=/etc/rocket/Rocket.toml
 COPY Rocket.toml /etc/rocket/Rocket.toml
 

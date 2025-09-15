@@ -12,8 +12,10 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Deserializer, Serialize};
 
+
+
 #[derive(thiserror::Error, Debug)]
-pub enum GetStationError {
+pub enum IRISStationError {
     #[error(transparent)]
     Network(#[from] Box<ureq::Error>),
     #[error(transparent)]
@@ -22,8 +24,11 @@ pub enum GetStationError {
     Xml(#[from] quick_xml::DeError),
     #[error("station not found: {0}")]
     NotFound(String),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    #[error("invalid src format {0}")]
+    InvalidSourceFormat(String),
 }
-
 
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -93,16 +98,4 @@ pub struct StationInfo {
     pub meta_evas: Vec<u64>,
     pub available_transports: Vec<String>,
     pub number_of_events: Option<u64>,
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum GetStationInfosError {
-    #[error(transparent)]
-    Network(#[from] Box<ureq::Error>),
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    Json(#[from] serde_json::Error),
-    #[error("invalid src format {0}")]
-    InvalidSourceFormat(String),
 }

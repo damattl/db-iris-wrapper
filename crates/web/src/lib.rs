@@ -30,7 +30,8 @@ pub fn build(service: AppService) -> Rocket<Build> {
         builder, "/v1".to_owned(), settings,
         "/stations" => routes::stations::routes(),
         "/trains" =>  routes::trains::routes(),
-        "/messages" => routes::messages::routes()
+        "/messages" => routes::messages::routes(),
+        "/status_codes" => routes::status_codes::routes()
     };
     builder
         .mount(

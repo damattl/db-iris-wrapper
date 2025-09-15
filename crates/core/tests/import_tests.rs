@@ -1,9 +1,8 @@
 mod common;
 
-use std::collections::HashSet;
+use std::{collections::HashSet, env};
 
-use dotenvy::dotenv;
-use wrapper_core::{db::{establish_pg_pool, run_migrations}, model::train::Train, ports::Port, repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}, usecases::{import_iris_data, import_iris_data_for_station_by_ds100, import_station_data}};
+use wrapper_core::{db::{establish_pg_pool, run_migrations}, model::train::Train, ports::Port, repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}, import::{import_iris_data_for_station_by_ds100, import_station_data}};
 
 use chrono::{Local};
 
@@ -23,9 +22,11 @@ fn find_duplicates<T: Eq + std::hash::Hash + Clone>(items: &[T]) -> Vec<T> {
 
 #[test]
 fn import_iris_data_for_single_station_succeeds() {
-    dotenv().ok();
-    let _ = pretty_env_logger::try_init();
     // Setup
+    let _ = pretty_env_logger::try_init();
+    env::set_var("STATIONS_SRC", "SQL:./tests/data/stations.sql");
+
+
     let (_container, db_url) = setup_test_postgres(); // _container needs to be kept in scope
     println!("Postgres URL: {}", db_url);
     let pool = establish_pg_pool(&db_url);
@@ -43,7 +44,7 @@ fn import_iris_data_for_single_station_succeeds() {
     let date = Local::now().naive_local();
     let (trains, stops, messages) = import_iris_data_for_station_by_ds100("AH", &date, &message_repo, &train_repo, &stop_repo).unwrap();
 
-    let station_id = stops.first().unwrap().station_id;
+    // let station_id = stops.first().unwrap().station_id;
 
     assert!(trains.len() > 0);
     assert!(stops.len() > 0);

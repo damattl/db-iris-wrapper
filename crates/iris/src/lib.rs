@@ -6,6 +6,7 @@ mod station_fetch;
 mod timetable_dto;
 mod timetable_fetch;
 
+
 pub mod fetch {
     pub use crate::timetable_fetch::{*};
     pub use crate::station_fetch::{*};

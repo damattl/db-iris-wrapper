@@ -1,12 +1,8 @@
 use std::num::ParseIntError;
 use diesel::prelude::*;
 
-use rocket_okapi::okapi::schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 
 #[derive(Debug, Clone)]
-#[derive(Serialize, Deserialize, JsonSchema)]
 #[derive(Queryable, QueryableByName, Selectable, Insertable)]
 #[diesel(table_name = crate::db::schema::stations)]
 #[diesel(check_for_backend(diesel::pg::Pg))]

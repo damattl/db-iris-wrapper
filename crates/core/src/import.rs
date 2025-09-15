@@ -1,19 +1,27 @@
 use std::{env};
 
 use chrono::{NaiveDate, NaiveDateTime};
-use iris::{dto::{GetTimetableError, StationInfo}, fetch::get_station_infos};
+use iris::{dto::{IRISStationError, IRISTimetableError, StationInfo}, fetch::get_station_infos};
 
 use crate::{
-    ingest::{ingest_timetable, ingest_timetable_messages}, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, StationPort, StopPort, TrainPort}, utils::HourIter
+    ingest::{ingest_timetable, ingest_timetable_messages}, io::get_status_codes, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, PortError, StationPort, StatusCodePort, StopPort, TrainPort}, utils::HourIter
 };
 
 /// Literal identifying long-distance trains in `StationInfo.available_transports`.
 const INTERCITY_TRAIN: &str = "INTERCITY_TRAIN";
 
 #[derive(thiserror::Error, Debug)]
-pub enum ImportStationsError {
+pub enum ImportError {
     #[error("invalid src format {0}")]
     InvalidSourceFormat(String),
+    #[error(transparent)]
+    StationError(#[from] IRISStationError),
+    #[error(transparent)]
+    TimetableError(#[from] IRISTimetableError),
+    #[error(transparent)]
+    PersistanceError(#[from] PortError),
+    #[error(transparent)]
+    Custom(#[from] Box<dyn std::error::Error>),
 }
 
 /// Discover **IRIS-active** stations and persist them.
@@ -48,23 +56,23 @@ pub enum ImportStationsError {
 /// ```
 pub fn import_station_data(
     port: &dyn StationPort,
-) -> Result<Vec<Station>, Box<dyn std::error::Error>> {
+) -> Result<Vec<Station>, ImportError> {
     let stations_src = env::var("STATIONS_SRC")
         .unwrap_or("API:https://bahnvorhersage.de/api/stations.json".to_string());
 
     let parts: Vec<String> = stations_src.splitn(2, ':').map(|p| p.to_string()).collect();
-    let src_type = parts.first().ok_or(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))?;
-    let src = parts.get(1).ok_or(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))?;
+    let src_type = parts.first().ok_or(ImportError::InvalidSourceFormat(stations_src.clone()))?;
+    let src = parts.get(1).ok_or(ImportError::InvalidSourceFormat(stations_src.clone()))?;
 
     let station_infos;
     println!("{}", stations_src);
 
     match src_type.as_str() {
         "API" => {
-            station_infos = get_station_infos(src, true).map_err(Box::new);
+            station_infos = get_station_infos(src, true);
         },
         "JSON" => {
-            station_infos = get_station_infos(src, false).map_err(Box::new);
+            station_infos = get_station_infos(src, false);
         },
         "SQL" => {
             println!("{}", src);
@@ -72,7 +80,7 @@ pub fn import_station_data(
             return Ok(results)
         },
         _ => {
-            return Err(Box::new(ImportStationsError::InvalidSourceFormat(stations_src.clone())))
+            return Err(ImportError::InvalidSourceFormat(stations_src.clone()))
         }
     };
 
@@ -174,7 +182,7 @@ pub fn import_iris_data_for_station(
         );
         let tt = match iris::fetch::get_timetable_for_station(station.id, &date, hour) {
             Ok(tt) => tt,
-            Err(iris::dto::GetTimetableError::EmptyTimetable(_)) => continue,
+            Err(iris::dto::IRISTimetableError::EmptyTimetable(_)) => continue,
             Err(e) => return Err(e.into()),
         };
 
@@ -187,7 +195,7 @@ pub fn import_iris_data_for_station(
 
     let messages = match iris::fetch::get_timetable_messages_for_station(station.id) {
         Ok(tt) => ingest_timetable_messages(&tt, stops.iter().map(|s| (s.id.clone(), s)).collect()),
-        Err(GetTimetableError::EmptyTimetable(_)) => Vec::new(),
+        Err(IRISTimetableError::EmptyTimetable(_)) => Vec::new(),
         Err(err) => return Err(err.into()),
     };
 
@@ -367,5 +375,22 @@ pub fn import_iris_messages(
             |e| error!("Error while importing iris_messages for station {}: {}", station.id, e)
         );
     }
+    Ok(())
+}
+
+
+
+pub fn import_status_codes(
+    status_code_port: &dyn StatusCodePort,
+) -> Result<(), ImportError> {
+    let codes = get_status_codes().map_err(|e| {
+        match e {
+            crate::io::IOError::InvalidSourceFormat(err) => ImportError::InvalidSourceFormat(err),
+            crate::io::IOError::ExcelError(err) => ImportError::Custom(Box::new(err)),
+        }
+    })?;
+
+    status_code_port.persist_all(&codes)?;
+
     Ok(())
 }

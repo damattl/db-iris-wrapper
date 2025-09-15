@@ -4,7 +4,7 @@ use dotenvy::dotenv;
 use log::info;
 use web::build;
 use web::service::AppService;
-use wrapper_core::{db::{establish_default_pg_pool, run_migrations}, service::{ImportService}, repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}};
+use wrapper_core::{db::{establish_default_pg_pool, run_migrations}, repos::{MessageRepo, StationRepo, StatusCodeRepo, StopRepo, TrainRepo}, service::ImportService};
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,14 +21,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         station_repo: Arc::new(StationRepo::new(pool.clone())),
         message_repo: Arc::new(MessageRepo::new(pool.clone())),
         train_repo: Arc::new(TrainRepo::new(pool.clone())),
-        stop_repo: Arc::new(StopRepo::new(pool.clone()))
+        stop_repo: Arc::new(StopRepo::new(pool.clone())),
+        status_code_repo: Arc::new(StatusCodeRepo::new(pool.clone())),
     };
 
     let import_service = ImportService::new(
         service.station_repo.clone(),
         service.message_repo.clone(),
         service.train_repo.clone(),
-        service.stop_repo.clone()
+        service.stop_repo.clone(),
+        service.status_code_repo.clone()
     );
 
     import_service.start();

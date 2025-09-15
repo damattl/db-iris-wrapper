@@ -25,6 +25,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    status_codes (code) {
+        code -> Int2,
+        c_type -> Nullable<Text>,
+        long_text -> Text,
+    }
+}
+
+diesel::table! {
     stops (id) {
         id -> Text,
         train_id -> Text,
@@ -58,6 +66,7 @@ diesel::joinable!(stops -> trains (train_id));
 diesel::allow_tables_to_appear_in_same_query!(
     messages,
     stations,
+    status_codes,
     stops,
     trains,
 );

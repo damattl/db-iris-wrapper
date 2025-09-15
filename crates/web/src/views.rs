@@ -2,7 +2,7 @@ use chrono::{NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Europe::Berlin;
 use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use wrapper_core::model::{message::Message, station::Station, stop::{split_stops_by_time, Movement, Stop, StopWithStation}, train::Train};
+use wrapper_core::model::{message::Message, station::Station, status_code::StatusCode, stop::{split_stops_by_time, Movement, Stop, StopWithStation}, train::Train};
 
 #[derive(Clone, Debug)]
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -154,6 +154,30 @@ impl MessageView {
             code: message.code,
             timestamp: message.timestamp,
             m_type: message.m_type.clone(),
+        }
+    }
+}
+
+
+#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, JsonSchema)]
+pub struct StatusCodeView {
+    pub code: i16,
+    pub c_type: Option<String>,
+    pub long_text: String,
+}
+
+
+impl StatusCodeView {
+    pub fn from_model(station: &StatusCode) -> Self {
+        StatusCodeView {
+            code: station.code,
+            c_type: station.c_type.as_ref().map(|t| match t {
+                wrapper_core::model::status_code::StatusCodeType::TravelInfo => "TravelInfo",
+                wrapper_core::model::status_code::StatusCodeType::Quality => "Quality",
+                wrapper_core::model::status_code::StatusCodeType::Unknown => "Unknown",
+            }.to_string()),
+            long_text: station.long_text.clone(),
         }
     }
 }
