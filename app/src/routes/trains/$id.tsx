@@ -59,11 +59,19 @@ function RouteComponent() {
       <h3>{displayDate(train?.date)}</h3>
       <span>{getStartToEnd(train)}</span>
 
-      <h3 className="text-xl font-bold my-3">Zukünftige Stops</h3>
-      <StopViewTable stops={train.next_stops} nextStop={train.next_stop} />
+      {train.next_stops.length > 0 && (
+        <>
+          <h3 className="text-xl font-bold my-3">Zukünftige Stops</h3>
+          <StopViewTable stops={train.next_stops} nextStop={train.next_stop} />
+        </>
+      )}
 
-      <h3 className="text-xl font-bold mt-6 my-3">Vergangene Stops</h3>
-      <StopViewTable stops={train.past_stops} nextStop={train.next_stop} />
+      {train.past_stops.length > 0 && (
+        <>
+          <h3 className="text-xl font-bold mt-6 my-3">Vergangene Stops</h3>
+          <StopViewTable stops={train.past_stops} nextStop={train.next_stop} />
+        </>
+      )}
 
       <h3 className="text-xl font-bold mt-6 my-3">Meldungen</h3>
       <MessageViewTable
