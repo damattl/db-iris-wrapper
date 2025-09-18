@@ -4,7 +4,7 @@ use chrono::{NaiveDate, NaiveDateTime};
 use iris::{dto::{IRISStationError, IRISTimetableError, StationInfo}, fetch::get_station_infos};
 
 use crate::{
-    ingest::{ingest_timetable, ingest_timetable_messages}, io::get_status_codes, model::{message::Message, station::Station, stop::Stop, train::Train}, ports::{MessagePort, PortError, StationPort, StatusCodePort, StopPort, TrainPort}, utils::HourIter
+    ingest::{ingest_timetable, ingest_timetable_messages}, io::get_status_codes, model::{Message, Train, Station, Stop}, ports::{MessagePort, PortError, StationPort, StatusCodePort, StopPort, TrainPort}, utils::HourIter
 };
 
 /// Literal identifying long-distance trains in `StationInfo.available_transports`.

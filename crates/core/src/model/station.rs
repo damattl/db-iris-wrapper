@@ -1,11 +1,7 @@
 use std::num::ParseIntError;
-use diesel::prelude::*;
 
 
 #[derive(Debug, Clone)]
-#[derive(Queryable, QueryableByName, Selectable, Insertable)]
-#[diesel(table_name = crate::db::schema::stations)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Station {
     pub id: i32,
     pub lat: Option<f64>,

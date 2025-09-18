@@ -1,13 +1,8 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDate, NaiveDateTime};
 use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, QueryDsl, RunQueryDsl, SelectableHelper};
 
-use crate::{db::{model::StatusCodeRow, run_sql_file}, model::stop::StopWithStation, ports::StatusCodePort};
-
-use super::{db::{model::StopRow, schema::{messages, stations::{self}, stops, trains, status_codes}, PgPool}, model::{message::Message, station::Station, stop::Stop, train::Train, status_code::StatusCode}, ports::{MessagePort, Port, StationPort, StopPort, TrainPort, PortError}};
-
-pub struct StationRepo {
-    pool: PgPool
-}
+use crate::{model::{Message, Station, StatusCode, Stop, Train, StopWithStation}, ports::{MessagePort, Port, PortError, StationPort, StatusCodePort, TrainPort, StopPort}};
+use super::db::{schema::{stations, trains, status_codes, messages, stops}, PgPool, run_sql_file, row::{StatusCodeRow, StopRow, MessageRow, StationRow, TrainRow}};
 
 fn map_pool_err<E>(err: E) -> PortError
 where E: std::error::Error {
@@ -27,6 +22,10 @@ fn map_query_result_err(err: diesel::result::Error) -> PortError {
     }
 }
 
+pub struct StationRepo {
+    pool: PgPool,
+}
+
 impl StationRepo {
     pub fn new(pool: PgPool) -> Self {
         Self { pool }
@@ -34,50 +33,72 @@ impl StationRepo {
 }
 
 impl Port<Station, i32> for StationRepo {
-    fn persist(&self, station: &crate::model::station::Station) -> Result<Station, PortError> {
+    fn persist(&self, station: &Station) -> Result<Station, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        diesel::insert_into(stations::table)
-            .values(station)
+        let result = diesel::insert_into(stations::table)
+            .values(StationRow::from(station))
             .on_conflict_do_nothing()
-            .returning(Station::as_returning())
-            .get_result::<Station>(&mut conn).map_err(map_query_result_err)
+            .returning(StationRow::as_returning())
+            .get_result::<StationRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(Station::from(result))
     }
 
-    fn persist_all(&self, stations: &[crate::model::station::Station]) -> Result<Vec<Station>, PortError> {
+    fn persist_all(&self, stations: &[Station]) -> Result<Vec<Station>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        diesel::insert_into(stations::table)
-            .values(stations)
+        let result = diesel::insert_into(stations::table)
+            .values(stations.iter().map(StationRow::from).collect::<Vec<StationRow>>())
             .on_conflict_do_nothing()
-            .returning(Station::as_returning())
-            .get_results::<Station>(&mut conn).map_err(map_query_result_err)
+            .returning(StationRow::as_returning())
+            .get_results::<StationRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(result.iter().map(Station::from).collect())
     }
 
     fn get_by_id(&self, id: i32) -> Result<Station, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        stations::table.find(id).select(Station::as_select()).first(&mut conn).map_err(map_query_result_err)
+        let row = stations::table
+            .find(id)
+            .select(StationRow::as_select())
+            .first(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(Station::from(row))
     }
 
     fn get_all(&self) -> Result<Vec<Station>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        stations::table.select(Station::as_select()).get_results(&mut conn).map_err(map_query_result_err)
+        let rows = stations::table
+            .select(StationRow::as_select())
+            .get_results::<StationRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(rows.iter().map(Station::from).collect())
     }
 }
 
 impl StationPort for StationRepo {
     fn get_by_ds100(&self, ds100: &str) -> Result<Station, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        stations::table.filter(stations::ds100.eq(ds100)).select(Station::as_select()).first(&mut conn).map_err(map_query_result_err)
+        let row = stations::table
+            .filter(stations::ds100.eq(ds100))
+            .select(StationRow::as_select())
+            .first::<StationRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(Station::from(row))
     }
+
     fn import_from_sql(&self, path: &str) -> Result<Vec<Station>, PortError> {
-        run_sql_file::<Station>(&self.pool, path).map_err(|e| {
-            error!("Error importing stations from SQL file: {}", e);
-            PortError::Custom(e)
-        })
+        run_sql_file::<StationRow>(&self.pool, path)
+            .map(|rows| rows.into_iter().map(Station::from).collect())
+            .map_err(|e| {
+                error!("Error importing stations from SQL file: {}", e);
+                PortError::Custom(e)
+            })
     }
 }
 
+
 pub struct TrainRepo {
-    pool: PgPool
+    pool: PgPool,
 }
 
 impl TrainRepo {
@@ -86,58 +107,75 @@ impl TrainRepo {
     }
 }
 
- impl TrainPort for TrainRepo {
-    fn get_by_station_and_date(&self, station: &Station, date: &chrono::NaiveDate) -> Result<Vec<Train>, PortError> {
+impl TrainPort for TrainRepo {
+    fn get_by_station_and_date(&self, station: &Station, date: &NaiveDate) -> Result<Vec<Train>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
 
         let results = trains::table
-                .inner_join(stops::table.on(stops::train_id.eq(trains::id)))
-                .inner_join(stations::table.on(stops::station_id.eq(stations::id)))
-                .filter(stations::id.eq(station.id).and(trains::date.eq(date)))
-                .select(trains::all_columns)
-                .load::<Train>(&mut conn)
-                .map_err(map_query_result_err)?;
+            .inner_join(stops::table.on(stops::train_id.eq(trains::id)))
+            .inner_join(stations::table.on(stops::station_id.eq(stations::id)))
+            .filter(stations::id.eq(station.id).and(trains::date.eq(date)))
+            .select(TrainRow::as_select())
+            .load::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
 
-        Ok(results)
+        Ok(results.iter().map(Train::from).collect())
     }
 
-
-    fn get_by_date(&self, date: &chrono::NaiveDate) -> Result<Vec<Train>, PortError> {
+    fn get_by_date(&self, date: &NaiveDate) -> Result<Vec<Train>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        trains::table.filter(trains::date.eq(date)).select(Train::as_select()).get_results(&mut conn).map_err(map_query_result_err)
+        let rows = trains::table
+            .filter(trains::date.eq(date))
+            .select(TrainRow::as_select())
+            .get_results::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(rows.iter().map(Train::from).collect())
     }
 }
-
 
 impl Port<Train, String> for TrainRepo {
     fn persist(&self, train: &Train) -> Result<Train, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        diesel::insert_into(trains::table)
-            .values(train)
+        let row = diesel::insert_into(trains::table)
+            .values(TrainRow::from(train))
             .on_conflict_do_nothing()
-            .returning(Train::as_returning())
-            .get_result::<Train>(&mut conn).map_err(map_query_result_err)
+            .returning(TrainRow::as_returning())
+            .get_result::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(Train::from(row))
     }
 
     fn persist_all(&self, trains: &[Train]) -> Result<Vec<Train>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        diesel::insert_into(trains::table)
-            .values(trains)
+        let rows = diesel::insert_into(trains::table)
+            .values(trains.iter().map(TrainRow::from).collect::<Vec<TrainRow>>())
             .on_conflict_do_nothing()
-            .returning(Train::as_returning())
-            .get_results::<Train>(&mut conn).map_err(map_query_result_err)
+            .returning(TrainRow::as_returning())
+            .get_results::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(rows.iter().map(Train::from).collect())
     }
 
     fn get_by_id(&self, id: String) -> Result<Train, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        trains::table.find(id).select(Train::as_select()).first(&mut conn).map_err(map_query_result_err)
+        let row = trains::table
+            .find(id)
+            .select(TrainRow::as_select())
+            .first::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(Train::from(row))
     }
 
     fn get_all(&self) -> Result<Vec<Train>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
-        trains::table.select(Train::as_select()).get_results(&mut conn).map_err(map_query_result_err)
+        let rows = trains::table
+            .select(TrainRow::as_select())
+            .get_results::<TrainRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+        Ok(rows.iter().map(Train::from).collect())
     }
 }
+
 
 
 
@@ -187,11 +225,14 @@ impl StopRepo {
         let results = stops::table
                 .inner_join(stations::table)
                 .filter(stops::train_id.eq(train_id))
-                .select((StopRow::as_select(), Station::as_select()))
-                .load::<(StopRow, Station)>(&mut conn)
+                .select((StopRow::as_select(), StationRow::as_select()))
+                .load::<(StopRow, StationRow)>(&mut conn)
                 .map(|rows| {
                     rows.into_iter()
-                        .map(|(stop_row, station)| StopWithStation { stop: stop_row.to_stop(), station })
+                        .map(|(stop_row, station_row)| StopWithStation {
+                            stop: stop_row.to_stop(),
+                            station: Station::from(station_row)
+                        })
                         .collect()
                 }).map_err(map_query_result_err)?;
         Ok(results)
@@ -281,11 +322,11 @@ impl Port<Stop, String> for StopRepo {
             .filter(messages::timestamp.ge(start))
             .filter(messages::timestamp.lt(end))
             .filter(messages::code.eq(code))
-            .select(Message::as_select())
+            .select(MessageRow::as_select())
             .get_results(&mut conn)
             .map_err(map_query_result_err)?;
 
-         Ok(results)
+         Ok(results.iter().map(Message::from).collect())
      }
 
      fn get_by_train_id(&self, train_id: &str) -> Result<Vec<Message>, PortError> {
@@ -293,50 +334,55 @@ impl Port<Stop, String> for StopRepo {
 
          let results = messages::table
             .filter(messages::train_id.eq(train_id))
-            .select(Message::as_select())
+            .select(MessageRow::as_select())
             .get_results(&mut conn)
             .map_err(map_query_result_err)?;
 
-         Ok(results)
+         Ok(results.iter().map(Message::from).collect())
      }
  }
 
  impl Port<Message, String> for MessageRepo {
      fn persist(&self, message: &Message) -> Result<Message, PortError> {
          let mut conn = self.pool.get().map_err(map_pool_err)?;
-         diesel::insert_into(messages::table)
-             .values(message)
+         let result = diesel::insert_into(messages::table)
+             .values(MessageRow::from(message))
              .on_conflict_do_nothing()
-             .returning(Message::as_returning())
-             .get_result::<Message>(&mut conn)
-             .map_err(map_query_result_err)
+             .returning(MessageRow::as_returning())
+             .get_result::<MessageRow>(&mut conn)
+             .map_err(map_query_result_err)?;
+        Ok(Message::from(result))
      }
 
      fn persist_all(&self, messages: &[Message]) -> Result<Vec<Message>, PortError> {
          let mut conn = self.pool.get().map_err(map_pool_err)?;
-         diesel::insert_into(messages::table)
-             .values(messages)
+         let result = diesel::insert_into(messages::table)
+             .values(messages.iter().map(MessageRow::from).collect::<Vec<MessageRow>>())
              .on_conflict_do_nothing()
-             .returning(Message::as_returning())
-             .get_results::<Message>(&mut conn)
-             .map_err(map_query_result_err)
+             .returning(MessageRow::as_returning())
+             .get_results::<MessageRow>(&mut conn)
+             .map_err(map_query_result_err)?;
+        Ok(result.iter().map(Message::from).collect())
      }
 
      fn get_by_id(&self, id: String) -> Result<Message, PortError> {
          let mut conn = self.pool.get().map_err(map_pool_err)?;
-         messages::table
+         let result = messages::table
              .find(id)
-             .select(Message::as_select())
+             .select(MessageRow::as_select())
              .first(&mut conn)
-             .map_err(map_query_result_err)
+             .map_err(map_query_result_err)?;
+
+         Ok(Message::from(result))
      }
 
      fn get_all(&self) -> Result<Vec<Message>, PortError> {
          let mut conn = self.pool.get().map_err(map_pool_err)?;
-         messages::table
-             .select(Message::as_select())
+         let result = messages::table
+             .select(MessageRow::as_select())
              .get_results(&mut conn)
-             .map_err(map_query_result_err)
+             .map_err(map_query_result_err)?;
+         Ok(result.iter().map(Message::from).collect())
      }
  }
 

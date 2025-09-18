@@ -1,6 +1,13 @@
-pub mod station;
-pub mod train;
-pub mod stop;
-pub mod error;
-pub mod message;
-pub mod status_code;
+mod station;
+mod train;
+mod stop;
+mod error;
+mod message;
+mod status_code;
+
+pub use station::{*};
+pub use train::{*};
+pub use stop::{*};
+pub use error::{*};
+pub use message::{*};
+pub use status_code::{*};

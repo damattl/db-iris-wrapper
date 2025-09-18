@@ -2,7 +2,7 @@ mod common;
 
 use std::{collections::HashSet, env};
 
-use wrapper_core::{db::{establish_pg_pool, run_migrations}, model::train::Train, ports::Port, repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}, import::{import_iris_data_for_station_by_ds100, import_station_data}};
+use wrapper_core::{data::{establish_pg_pool, run_migrations}, model::Train, ports::Port, data::repos::{MessageRepo, StationRepo, StopRepo, TrainRepo}, import::{import_iris_data_for_station_by_ds100, import_station_data}};
 
 use chrono::{Local};
 

@@ -2,7 +2,7 @@ use chrono::{NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Europe::Berlin;
 use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use wrapper_core::model::{message::Message, station::Station, status_code::StatusCode, stop::{split_stops_by_time, Movement, Stop, StopWithStation}, train::Train};
+use wrapper_core::model::{Message, Station, StatusCode, {split_stops_by_time, Movement, Stop, StopWithStation}, Train};
 
 #[derive(Clone, Debug)]
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -77,6 +77,7 @@ impl StopView {
 pub struct MovementView {
     pub platform: Option<String>,
     pub planned: Option<NaiveDateTime>,
+    pub current: Option<NaiveDateTime>,
     pub planned_path: Option<Vec<String>>,
     pub changed_path: Option<Vec<String>>,
 }
@@ -86,6 +87,7 @@ impl MovementView {
         MovementView {
             platform: movement.platform.clone(),
             planned: movement.planned,
+            current: movement.current,
             planned_path: None,
             changed_path: None,
         }
@@ -94,6 +96,7 @@ impl MovementView {
         MovementView {
             platform: movement.platform.clone(),
             planned: movement.planned,
+            current: movement.current,
             planned_path: movement.planned_path.clone(),
             changed_path: movement.changed_path.clone(),
         }
@@ -173,9 +176,9 @@ impl StatusCodeView {
         StatusCodeView {
             code: station.code,
             c_type: station.c_type.as_ref().map(|t| match t {
-                wrapper_core::model::status_code::StatusCodeType::TravelInfo => "TravelInfo",
-                wrapper_core::model::status_code::StatusCodeType::Quality => "Quality",
-                wrapper_core::model::status_code::StatusCodeType::Unknown => "Unknown",
+                wrapper_core::model::StatusCodeType::TravelInfo => "TravelInfo",
+                wrapper_core::model::StatusCodeType::Quality => "Quality",
+                wrapper_core::model::StatusCodeType::Unknown => "Unknown",
             }.to_string()),
             long_text: station.long_text.clone(),
         }

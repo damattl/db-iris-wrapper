@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use crate::model::{message::Message, station::Station, status_code::StatusCode, stop::{Stop, StopWithStation}, train::Train};
+use crate::model::{Message, Station, Train, Stop, StopWithStation, StatusCode};
 
 #[derive(thiserror::Error, Debug)]
 pub enum PortError {

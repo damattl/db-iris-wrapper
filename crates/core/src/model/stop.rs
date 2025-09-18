@@ -52,6 +52,7 @@ impl HasStopGetter for StopWithStation {
 pub struct Movement {
     pub platform: Option<String>,
     pub planned: Option<NaiveDateTime>,
+    pub current: Option<NaiveDateTime>,
     pub planned_path: Option<Vec<String>>,
     pub changed_path: Option<Vec<String>>,
 }
@@ -61,6 +62,7 @@ impl Movement {
         Movement {
             platform: movement.platform.clone(),
             planned: movement.planned,
+            current: movement.current,
             planned_path: movement.ppth.clone(),
             changed_path: movement.cpth.clone(),
         }

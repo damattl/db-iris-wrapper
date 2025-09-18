@@ -1,10 +1,9 @@
 use chrono::NaiveDateTime;
 use diesel::*;
-
-use crate::model::{status_code::{StatusCode, StatusCodeType}, stop::{Movement, Stop}};
+use crate::model::{Movement, Stop};
 
 #[derive(Queryable, Selectable, Insertable)]
-#[diesel(table_name = super::schema::stops)]
+#[diesel(table_name = crate::data::db::schema::stops)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct StopRow {
     pub id: String,
@@ -17,7 +16,9 @@ pub struct StopRow {
     pub departure_platform: Option<String>,
     pub departure_planned: Option<NaiveDateTime>,
     pub departure_planned_path: Option<String>,
-    pub departure_changed_path: Option<String>
+    pub departure_changed_path: Option<String>,
+    pub arrival_current: Option<NaiveDateTime>,
+    pub departure_current: Option<NaiveDateTime>,
 }
 
 impl StopRow {
@@ -34,12 +35,14 @@ impl StopRow {
             station_id: stop.station_id,
             arrival_platform: arr_mov.0,
             arrival_planned: arr_mov.1,
-            arrival_planned_path: arr_mov.2,
-            arrival_changed_path: arr_mov.3,
+            arrival_current: arr_mov.2,
+            arrival_planned_path: arr_mov.3,
+            arrival_changed_path: arr_mov.4,
             departure_platform: dep_mov.0,
             departure_planned: dep_mov.1,
-            departure_planned_path: dep_mov.2,
-            departure_changed_path: dep_mov.3
+            departure_current: dep_mov.2,
+            departure_planned_path: dep_mov.3,
+            departure_changed_path: dep_mov.4
         }
     }
 
@@ -51,12 +54,14 @@ impl StopRow {
             departure: movement_from_columns(
                 self.departure_platform.clone(),
                 self.departure_planned,
+                self.departure_current,
                 self.departure_planned_path.clone(),
                 self.departure_changed_path.clone()
             ),
             arrival: movement_from_columns(
                 self.arrival_platform.clone(),
                 self.arrival_planned,
+                self.arrival_current,
                 self.arrival_planned_path.clone(),
                 self.arrival_changed_path.clone()
             )
@@ -64,21 +69,23 @@ impl StopRow {
     }
 }
 
+type MovementRowPart = (Option<String>, Option<NaiveDateTime>, Option<NaiveDateTime>, Option<String>, Option<String>);
 
-fn movement_to_columns(movement: &Option<Movement>) -> (Option<String>, Option<NaiveDateTime>, Option<String>, Option<String>) {
+fn movement_to_columns(movement: &Option<Movement>) -> MovementRowPart {
     match movement {
         Some(movement) => {
             let planned_path = movement.planned_path.as_ref().map(|p| p.join(","));
             let current_path = movement.changed_path.as_ref().map(|p| p.join(","));
-            (movement.platform.clone(), movement.planned, planned_path, current_path)
+            (movement.platform.clone(), movement.planned, movement.current, planned_path, current_path)
         }
-        None => (None, None, None, None)
+        None => (None, None, None, None, None)
     }
 }
 
 fn movement_from_columns(
     platform: Option<String>,
     planned: Option<NaiveDateTime>,
+    current: Option<NaiveDateTime>,
     planned_path: Option<String>,
     changed_path: Option<String>
 ) -> Option<Movement>  {
@@ -88,59 +95,9 @@ fn movement_from_columns(
         Some(Movement {
             platform,
             planned,
+            current,
             planned_path: planned_path.map(|p| p.split(',').map(String::from).collect()),
             changed_path: changed_path.map(|p| p.split(',').map(String::from).collect())
         })
-    }
-}
-
-
-#[derive(Debug, Clone)]
-#[derive(Queryable, QueryableByName, Selectable, Insertable)]
-#[diesel(table_name = crate::db::schema::status_codes)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct StatusCodeRow {
-    pub code: i16,
-    pub c_type: Option<String>,
-    pub long_text: String,
-}
-
-impl From<&StatusCode> for StatusCodeRow {
-    fn from(status_code: &StatusCode) -> Self {
-        StatusCodeRow {
-            code: status_code.code,
-            c_type: status_code.c_type.as_ref().map(|c| c.as_string()),
-            long_text: status_code.long_text.clone(),
-        }
-    }
-}
-
-impl From<&StatusCodeRow> for StatusCode {
-    fn from(status_code_row: &StatusCodeRow) -> Self {
-        StatusCode {
-            code: status_code_row.code,
-            c_type: status_code_row.c_type.as_deref().map(StatusCodeType::from).clone(),
-            long_text: status_code_row.long_text.clone(),
-        }
-    }
-}
-
-impl From<StatusCode> for StatusCodeRow {
-    fn from(status_code: StatusCode) -> Self {
-        StatusCodeRow {
-            code: status_code.code,
-            c_type: status_code.c_type.as_ref().map(|c| c.as_string()),
-            long_text: status_code.long_text.clone(),
-        }
-    }
-}
-
-impl From<StatusCodeRow> for StatusCode {
-    fn from(status_code_row: StatusCodeRow) -> Self {
-        StatusCode {
-            code: status_code_row.code,
-            c_type: status_code_row.c_type.as_deref().map(StatusCodeType::from).clone(),
-            long_text: status_code_row.long_text.clone(),
-        }
     }
 }

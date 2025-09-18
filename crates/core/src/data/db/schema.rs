@@ -45,6 +45,8 @@ diesel::table! {
         departure_planned -> Nullable<Timestamp>,
         departure_planned_path -> Nullable<Text>,
         departure_changed_path -> Nullable<Text>,
+        arrival_current -> Nullable<Timestamp>,
+        departure_current -> Nullable<Timestamp>,
     }
 }
 

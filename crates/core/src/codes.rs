@@ -2,7 +2,7 @@ use std::error::Error;
 
 use iris::{self, dto::Stop};
 
-use crate::model::station::Station;
+use crate::model::Station;
 
 pub fn get_all_stops_with_codes(id: &str, codes: Vec<i32>) -> Result<Vec<Stop>, Box<dyn Error>> {
     let station = iris::fetch::get_station(id).map(Station::from_iris)??;

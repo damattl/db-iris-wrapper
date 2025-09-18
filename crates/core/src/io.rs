@@ -2,7 +2,7 @@
 
 use std::env;
 
-use crate::{io::status_code_excel::{get_codes_from_excel, ExcelImportError}, model::status_code::StatusCode};
+use crate::{io::status_code_excel::{get_codes_from_excel, ExcelImportError}, model::StatusCode};
 mod status_code_excel;
 
 

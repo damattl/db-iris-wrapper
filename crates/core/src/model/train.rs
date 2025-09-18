@@ -2,11 +2,6 @@ use chrono::{NaiveDate};
 use iris;
 
 
-use diesel::prelude::*;
-
-#[derive(Queryable, Selectable, Insertable)]
-#[diesel(table_name = crate::db::schema::trains)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
 #[derive(Debug, Clone)]
 pub struct Train {
     pub id: String, // Custom ID: format: number-date

@@ -2,8 +2,7 @@ use rocket::{get, response::status, serde::json::Json, Route, State};
 use rocket::http::Status;
 use rocket_okapi::okapi::openapi3::OpenApi;
 use rocket_okapi::{openapi, openapi_get_routes_spec};
-use wrapper_core::model::stop::{StopWithStation};
-use wrapper_core::{model::{train::Train}};
+use wrapper_core::model::{StopWithStation, Train};
 
 use crate::common::JsonResult;
 use crate::views::{TrainView};

@@ -4,7 +4,7 @@ use dotenvy::dotenv;
 use log::info;
 use web::build;
 use web::service::AppService;
-use wrapper_core::{db::{establish_default_pg_pool, run_migrations}, repos::{MessageRepo, StationRepo, StatusCodeRepo, StopRepo, TrainRepo}, service::ImportService};
+use wrapper_core::{data::{establish_default_pg_pool, run_migrations}, data::repos::{MessageRepo, StationRepo, StatusCodeRepo, StopRepo, TrainRepo}, service::ImportService};
 
 #[rocket::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

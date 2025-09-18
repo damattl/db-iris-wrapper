@@ -23,12 +23,15 @@ pub fn get_timetable_for_station(
     info!("URL: {}", url);
     let response = ureq::get(&url)
         //.set("Example-Header", "header value")
-        .call().map_err(Box::new)?;
+        .call()
+        .inspect_err(|err| error!("Error fetching timetable: {}", err))
+        .map_err(Box::new)?;
 
     let status = response.status();
     let body = response.into_string()?;
 
     if status != 200 {
+        warn!("Fetching timetable resulted in status code {}", status);
         return Err(IRISTimetableError::RequestFailed(status, body));
     }
 

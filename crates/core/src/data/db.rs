@@ -1,22 +1,15 @@
 use std::{env, fs};
 
-use diesel::{r2d2::{self, ConnectionManager}, Connection, PgConnection, QueryableByName, RunQueryDsl};
+use diesel::{r2d2::{self, ConnectionManager}, PgConnection, QueryableByName, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 
 pub mod schema;
-pub mod model;
+pub mod row;
 
 pub type PgPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("./migrations");
 
-pub fn establish_connection() -> PgConnection {
-    dotenv().ok();
-
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    PgConnection::establish(&database_url)
-        .unwrap_or_else(|_| panic!("Error connecting to {}", database_url))
-}
 
 pub fn run_migrations(pool: PgPool) {
     let mut conn = pool.get().unwrap();

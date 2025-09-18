@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use chrono::{NaiveDate};
 use iris::dto::Timetable;
 
-use crate::model::{message::Message, station::Station, stop::Stop, train::Train};
+use crate::model::{Message, Train, Station, Stop};
 
 pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station, date: &NaiveDate) -> (Vec<Train>, Vec<Stop>) {
     let mut trains: Vec<Train> = Vec::with_capacity(tt.stops.len());

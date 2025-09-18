@@ -1,7 +1,7 @@
 use calamine::{open_workbook, DeError, HeaderRow, RangeDeserializerBuilder, Reader, Xlsx, XlsxError};
 use serde::Deserialize;
 
-use crate::model::status_code::{StatusCode, StatusCodeType};
+use crate::model::{StatusCode, StatusCodeType};
 
 #[derive(Deserialize)]
 #[derive(Debug, Clone)]
