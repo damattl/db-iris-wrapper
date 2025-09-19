@@ -1,5 +1,11 @@
-import type { StopView } from "@/api";
-import { getPlatform, displayTime, sortByArrival } from "@/utils/stop";
+import type { MovementView, StopView } from "@/api";
+import { getTimestampNotNull } from "@/utils/date";
+import {
+  getPlatform,
+  displayTime,
+  sortByArrival,
+  displayTimeCurrent,
+} from "@/utils/stop";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
@@ -12,12 +18,30 @@ const platformTemplate = (stop: StopView) => {
   return getPlatform(stop);
 };
 
+const movementTemplate = (movement?: MovementView | null) => {
+  const showCurrent = movement?.current && movement.current != movement.planned;
+  const currentColor =
+    getTimestampNotNull(movement?.current) >
+    getTimestampNotNull(movement?.planned)
+      ? "text-red-500"
+      : "text-green-500";
+
+  return (
+    <div className="font-mono">
+      <span>{displayTime(movement)}</span>
+      {showCurrent && (
+        <span className={currentColor}> ({displayTimeCurrent(movement)})</span>
+      )}
+    </div>
+  );
+};
+
 const arrivalTemplate = (stop: StopView) => {
-  return <span className="font-mono">{displayTime(stop.arrival)}</span>;
+  return movementTemplate(stop.arrival);
 };
 
 const departureTemplate = (stop: StopView) => {
-  return <span className="font-mono">{displayTime(stop.departure)}</span>;
+  return movementTemplate(stop.departure);
 };
 
 export function StopViewTable({ stops, nextStop }: StopViewTableProps) {

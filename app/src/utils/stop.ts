@@ -41,3 +41,10 @@ export function displayTime(mov?: MovementView | null): string {
   const date = new Date(mov.planned);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
+
+export function displayTimeCurrent(mov?: MovementView | null): string {
+  if (!mov || !mov.current) return "";
+
+  const date = new Date(mov.current);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}

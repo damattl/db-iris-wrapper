@@ -4,6 +4,12 @@ export function getTimestamp(
   return parseDate(date)?.getTime();
 }
 
+export function getTimestampNotNull(
+  date?: Date | string | number | null,
+): number {
+  return getTimestamp(date) ?? 0;
+}
+
 export function parseDate(
   date?: Date | string | number | null,
 ): Date | null | undefined {

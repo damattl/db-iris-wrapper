@@ -38,6 +38,7 @@ export type StopView = {
 export type MovementView = {
     platform?: string | null;
     planned?: string | null;
+    current?: string | null;
     planned_path?: Array<string> | null;
     changed_path?: Array<string> | null;
 };
