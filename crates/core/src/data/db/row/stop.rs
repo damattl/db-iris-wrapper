@@ -1,6 +1,6 @@
 use chrono::NaiveDateTime;
 use diesel::*;
-use crate::model::{Movement, Stop};
+use crate::model::{Movement, Stop, StopUpdate};
 
 #[derive(Queryable, Selectable, Insertable)]
 #[diesel(table_name = crate::data::db::schema::stops)]
@@ -21,8 +21,8 @@ pub struct StopRow {
     pub departure_current: Option<NaiveDateTime>,
 }
 
-impl StopRow {
-    pub fn from_stop(
+impl From<&Stop> for StopRow {
+    fn from(
         stop: &Stop,
     ) -> Self {
 
@@ -45,7 +45,9 @@ impl StopRow {
             departure_changed_path: dep_mov.4
         }
     }
+}
 
+impl StopRow {
     pub fn to_stop(&self) -> Stop {
         Stop {
             id: self.id.clone(),
@@ -99,5 +101,42 @@ fn movement_from_columns(
             planned_path: planned_path.map(|p| p.split(',').map(String::from).collect()),
             changed_path: changed_path.map(|p| p.split(',').map(String::from).collect())
         })
+    }
+}
+
+
+#[derive(Debug, Clone, AsChangeset)]
+#[diesel(table_name = crate::data::db::schema::stops)]
+pub struct StopUpdateRow {
+    pub arrival_platform: Option<String>,
+    pub arrival_planned: Option<NaiveDateTime>,
+    pub arrival_planned_path: Option<String>,
+    pub arrival_changed_path: Option<String>,
+    pub departure_platform: Option<String>,
+    pub departure_planned: Option<NaiveDateTime>,
+    pub departure_planned_path: Option<String>,
+    pub departure_changed_path: Option<String>,
+    pub arrival_current: Option<NaiveDateTime>,
+    pub departure_current: Option<NaiveDateTime>,
+}
+
+
+impl From<&StopUpdate> for StopUpdateRow {
+    fn from(stop: &StopUpdate) -> Self {
+        let dep_mov = movement_to_columns(&stop.departure);
+        let arr_mov = movement_to_columns(&stop.arrival);
+
+        StopUpdateRow {
+            arrival_platform: arr_mov.0,
+            arrival_planned: arr_mov.1,
+            arrival_current: arr_mov.2,
+            arrival_planned_path: arr_mov.3,
+            arrival_changed_path: arr_mov.4,
+            departure_platform: dep_mov.0,
+            departure_planned: dep_mov.1,
+            departure_current: dep_mov.2,
+            departure_planned_path: dep_mov.3,
+            departure_changed_path: dep_mov.4,
+        }
     }
 }

@@ -1,8 +1,8 @@
 use chrono::{NaiveDate, NaiveDateTime};
-use diesel::{BoolExpressionMethods, ExpressionMethods, JoinOnDsl, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::{BoolExpressionMethods, Connection, ExpressionMethods, JoinOnDsl, OptionalEmptyChangesetExtension, QueryDsl, RunQueryDsl, SelectableHelper};
 
-use crate::{model::{Message, Station, StatusCode, Stop, Train, StopWithStation}, ports::{MessagePort, Port, PortError, StationPort, StatusCodePort, TrainPort, StopPort}};
-use super::db::{schema::{stations, trains, status_codes, messages, stops}, PgPool, run_sql_file, row::{StatusCodeRow, StopRow, MessageRow, StationRow, TrainRow}};
+use crate::{model::{Message, Station, StatusCode, Stop, StopUpdate, Train, StopWithStation}, ports::{MessagePort, Port, PortError, StationPort, StatusCodePort, TrainPort, StopPort}};
+use super::db::{schema::{stations, trains, status_codes, messages, stops}, PgPool, run_sql_file, row::{StatusCodeRow, StopRow, MessageRow, StationRow, TrainRow, StopUpdateRow}};
 
 fn map_pool_err<E>(err: E) -> PortError
 where E: std::error::Error {
@@ -11,7 +11,7 @@ where E: std::error::Error {
 }
 
 fn map_query_result_err(err: diesel::result::Error) -> PortError {
-    error!("QueryResultError: {}", err);
+    error!("QueryResultError: {:#?}, {}", err, err);
     match err {
         diesel::result::Error::DatabaseError(_, _) => PortError::Database, // TODO: Handle kind
         diesel::result::Error::NotFound => PortError::NotFound,
@@ -251,13 +251,46 @@ impl StopRepo {
 
         Ok(results.iter().map(|s| s.to_stop()).collect())
     }
+
+    fn update(&self, update: &StopUpdate) -> Result<Stop, PortError> {
+        let mut conn = self.pool.get().map_err(map_pool_err)?;
+
+        let row = diesel::update(stops::table.find(update.id.clone()))
+            .set(StopUpdateRow::from(update))
+            .returning(StopRow::as_returning())
+            .get_result::<StopRow>(&mut conn)
+            .map_err(map_query_result_err)?;
+
+        Ok(row.to_stop())
+    }
+
+    fn update_many(&self, updates: &[StopUpdate]) -> Result<Vec<Stop>, PortError> {
+        let mut conn = self.pool.get().map_err(map_pool_err)?;
+
+        let results = conn.transaction::<_, diesel::result::Error, _>(|tx| {
+            let mut out = Vec::with_capacity(updates.iter().len());
+            for patch in updates {
+                let result = diesel::update(stops::table.find(&patch.id))
+                    .set(StopUpdateRow::from(patch))
+                    .returning(StopRow::as_returning())
+                    .get_result(tx).optional_empty_changeset()?;
+                if let Some(row) = result {
+                    out.push(row.to_stop());
+                }
+            }
+            Ok(out)
+        }).map_err(map_query_result_err)?; // TODO: Map Update Result error?
+
+        Ok(results)
+    }
+
  }
 
 impl Port<Stop, String> for StopRepo {
     fn persist(&self, stop: &Stop) -> Result<Stop, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
         let result = diesel::insert_into(stops::table)
-            .values(StopRow::from_stop(stop))
+            .values(StopRow::from(stop))
             .on_conflict_do_nothing()
             .returning(StopRow::as_returning())
             .get_result::<StopRow>(&mut conn).map_err(map_query_result_err).map(|s| s.to_stop())?;
@@ -267,7 +300,7 @@ impl Port<Stop, String> for StopRepo {
     fn persist_all(&self, stops: &[Stop]) -> Result<Vec<Stop>, PortError> {
         let mut conn = self.pool.get().map_err(map_pool_err)?;
         let result = diesel::insert_into(stops::table)
-            .values(stops.iter().map(StopRow::from_stop).collect::<Vec<StopRow>>())
+            .values(stops.iter().map(StopRow::from).collect::<Vec<StopRow>>())
             .on_conflict_do_nothing()
             .returning(StopRow::as_returning())
             .get_results::<StopRow>(&mut conn).map_err(map_query_result_err).map(|v| v.iter().map(|s| s.to_stop()).collect())?;

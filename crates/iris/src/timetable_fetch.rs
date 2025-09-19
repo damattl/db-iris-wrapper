@@ -47,7 +47,7 @@ pub fn get_timetable_for_station(
     Ok(timetable)
 }
 
-pub fn get_timetable_messages_for_station(
+pub fn get_timetable_changes_for_station(
     station_id: i32,
 ) -> Result<Timetable, IRISTimetableError> {
     info!("Fetching timetable messages for station {}", station_id);

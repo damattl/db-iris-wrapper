@@ -1,6 +1,5 @@
 use chrono::{NaiveDateTime};
 
-use super::train::Train;
 use super::station::Station;
 
 pub trait HasStopGetter {
@@ -18,11 +17,11 @@ pub struct Stop {
 }
 
 impl Stop {
-    pub fn from_iris_stop(stop: &iris::dto::Stop, train: &Train, station: &Station) -> Self {
+    pub fn from_iris_stop(stop: &iris::dto::Stop, train_id: &str, station_id: i32) -> Self {
         Stop {
             id: stop.id.clone(),
-            train_id: train.id.clone(),
-            station_id: station.id,
+            train_id: train_id.to_string(),
+            station_id,
             arrival: stop.arrival.as_ref().map(Movement::from_iris_movement),
             departure: stop.departure.as_ref().map(Movement::from_iris_movement),
         }
@@ -34,6 +33,25 @@ impl HasStopGetter for Stop {
         self
     }
 }
+
+
+#[derive(Debug, Clone)]
+pub struct StopUpdate {
+    pub id: String,
+    pub arrival: Option<Movement>,
+    pub departure: Option<Movement>,
+}
+
+impl From<&Stop> for StopUpdate {
+    fn from(value: &Stop) -> Self {
+        StopUpdate {
+            id: value.id.clone(),
+            arrival: value.arrival.clone(),
+            departure: value.departure.clone()
+        }
+    }
+}
+
 
 #[derive(Debug, Clone)]
 pub struct StopWithStation {

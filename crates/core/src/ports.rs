@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use crate::model::{Message, Station, Train, Stop, StopWithStation, StatusCode};
+use crate::model::{Message, Station, StatusCode, Stop, StopUpdate, StopWithStation, Train};
 
 #[derive(thiserror::Error, Debug)]
 pub enum PortError {
@@ -44,6 +44,9 @@ pub trait StopPort: Port<Stop, String> + Send + Sync {
     fn get_for_train_with_station(&self, train_id: &str) -> Result<Vec<StopWithStation>, PortError>;
 
     fn get_by_station_and_date(&self, station: &Station, date: &NaiveDate) -> Result<Vec<Stop>, PortError>;
+
+    fn update(&self, update: &StopUpdate) -> Result<Stop, PortError>;
+    fn update_many(&self, updates: &[StopUpdate]) -> Result<Vec<Stop>, PortError>;
 }
 
 

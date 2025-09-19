@@ -1,44 +1,38 @@
 use std::{
-    env, sync::{
+    env,
+    sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
-    }, thread
+    },
+    thread,
 };
 use std::time::Duration;
 
-use chrono::Utc;
+use chrono::{Utc, TimeDelta};
 use chrono_tz::Europe::Berlin;
 
 use crate::{
     import::{
-        import_iris_data, import_iris_data_for_station_by_ds100, import_iris_messages, import_iris_messages_for_station_by_ds100, import_station_data, import_status_codes
-    }, ports::{MessagePort, StationPort, StatusCodePort, StopPort, TrainPort}
+        import_iris_changes, import_iris_changes_for_station_by_ds100, import_iris_data,
+        import_iris_data_for_station_by_ds100, import_station_data, import_status_codes,
+    },
+    ports::{MessagePort, StationPort, StatusCodePort, StopPort, TrainPort},
 };
 
 /// Periodic importer orchestrating station discovery, timetables, and messages.
-///
-/// See the module-level docs for scheduling, shutdown, and time semantics.
 pub struct ImportService {
-
     pub station_repo: Arc<dyn StationPort>,
     pub message_repo: Arc<dyn MessagePort>,
     pub train_repo: Arc<dyn TrainPort>,
     pub stop_repo: Arc<dyn StopPort>,
     pub status_code_repo: Arc<dyn StatusCodePort>,
 
-    /// Cooperative shutdown flag checked by the background worker.
-    ///
-    /// When set to `true`, the worker exits after completing the next sleep
-    /// cycle. The flag is **not** reset automatically.
+    /// Cooperative shutdown flag for the background loop.
     stop_ch: Arc<AtomicBool>,
 }
 
 impl ImportService {
-    /// Construct a new [`ImportService`].
-    ///
-    /// # Requirements
-    /// The trait objects behind the `Arc`s must be `Send + Sync + 'static`
-    /// because they are used by a spawned background thread.
+    /// Create a new service. All repos must be `Send + Sync + 'static`.
     pub fn new(
         station_repo: Arc<dyn StationPort>,
         message_repo: Arc<dyn MessagePort>,
@@ -56,118 +50,94 @@ impl ImportService {
         }
     }
 
-    /// Start the background worker.
+    /// Start a detached 20-minute loop:
+    /// - One-off: `import_station_data` and `import_status_codes` (startup).
+    /// - Every ~8 h: full timetable import (12 h on first run, then 8 h windows).
+    /// - Otherwise: messages-only import for the current local date.
     ///
-    /// Behavior:
-    /// 1. Runs a **one-off** station discovery & persist via
-    ///    [`import_station_data`]. *(Planned: make this daily.)*
-    /// 2. Spawns a thread that executes a 20-minute loop:
-    ///    - Every 33rd iteration (≈ 11 h): full 12-hour timetable import for
-    ///      DS100 `"AH"`.
-    ///    - Otherwise: messages-only import for the current local date.
-    ///
-    /// Errors from periodic tasks are **logged** and do not terminate the loop.
-    ///
-    /// # Panics
-    /// Panics if the initial call to [`import_station_data`] fails, due to the
-    /// `unwrap()` at startup.
-    ///
-    /// # Notes
-    /// - The method returns immediately; the worker runs detached.
-    /// - The thread `JoinHandle` is not exposed; use [`stop`](Self::stop) to
-    ///   request a graceful stop.
+    /// Errors are logged and do not stop the loop.
     pub fn start(&self) {
-        import_station_data(self.station_repo.as_ref()).unwrap(); // TODO: Do this once every day
+        import_station_data(self.station_repo.as_ref()).unwrap(); // TODO: Make this daily.
         import_status_codes(self.status_code_repo.as_ref()).unwrap();
 
-        let stop_ch_clone = self.stop_ch.clone();
-        let station_repo_clone = self.station_repo.clone();
-        let message_repo_clone = self.message_repo.clone();
-        let train_repo_clone = self.train_repo.clone();
-        let stop_repo_clone = self.stop_repo.clone();
+        let stop_ch_clone = Arc::clone(&self.stop_ch);
+        let station_repo = Arc::clone(&self.station_repo);
+        let message_repo = Arc::clone(&self.message_repo);
+        let train_repo = Arc::clone(&self.train_repo);
+        let stop_repo = Arc::clone(&self.stop_repo);
+
         thread::spawn(move || {
-            let mut loop_count = 11 * 3 + 1;
-            let single_station = env::var("SINGLE_STATION");
+            // 3 iterations ≈ 1 hour (20 min sleeps). Threshold 8*3 = 24 iterations ≈ 8 h.
+            let mut loop_count = 0;
+            let mut first_run = true;
+            let single_station = env::var("SINGLE_STATION").ok();
 
             while !stop_ch_clone.load(Ordering::Relaxed) {
-                let datetime = Utc::now().with_timezone(&Berlin).naive_local();
-                // Doesn't make much of a difference if UTC or Berlin, but makes the intention clearer
+                // Local wall time for IRIS calls/logging.
+                let now = Utc::now().with_timezone(&Berlin).naive_local();
 
-                if loop_count >= 11 * 3 {
+                if loop_count >= 8 * 3 || first_run {
                     loop_count = 0;
-                    // Every 11 hours, but the loop sleeps for 20 minutes each, so 3 loops = 1 hour
-                    // Combined with the time required for fetching the data this might result in some time drift
 
-                    match single_station {
-                        Ok(_) => {
-                            let result = import_iris_data_for_station_by_ds100(
-                                "AH", // TODO: Test for all stations
-                                &datetime,
-                                message_repo_clone.as_ref(),
-                                train_repo_clone.as_ref(),
-                                stop_repo_clone.as_ref(),
-                            );
-                            match result {
-                                Ok(_) => (),
-                                Err(err) => error!("Error importing iris data: {}", err),
-                            }
-                        },
-                        Err(_) => {
-                            let result = import_iris_data(
-                                &datetime,
-                                station_repo_clone.as_ref(),
-                                message_repo_clone.as_ref(),
-                                train_repo_clone.as_ref(),
-                                stop_repo_clone.as_ref(),
-                            );
-                            match result {
-                                Ok(_) => (),
-                                Err(err) => error!("Error importing iris data: {}", err),
-                            }
-                        },
+                    // First run: import 12 h from now. Afterwards: 8 h window shifted by 8 h.
+                    let (start, hours_in_advance) = if first_run {
+                        first_run = false;
+                        (now, 12)
+                    } else {
+                        (now + TimeDelta::hours(8), 8)
+                    };
+
+                    if let Some(ds100) = &single_station {
+                        if let Err(err) = import_iris_data_for_station_by_ds100(
+                            ds100,
+                            &start,
+                            hours_in_advance,
+                            message_repo.as_ref(),
+                            train_repo.as_ref(),
+                            stop_repo.as_ref(),
+                        ) {
+                            error!("Error importing iris data: {}", err);
+                        }
+                    } else if let Err(err) = import_iris_data(
+                        &start,
+                        hours_in_advance,
+                        station_repo.as_ref(),
+                        message_repo.as_ref(),
+                        train_repo.as_ref(),
+                        stop_repo.as_ref(),
+                    ) {
+                        error!("Error importing iris data: {}", err);
                     }
                 } else {
-                    match single_station {
-                        Ok(_) => {
-                            match import_iris_messages_for_station_by_ds100(
-                                "AH", // TODO: Test for all stations
-                                &datetime.date(),
-                                message_repo_clone.as_ref(),
-                                stop_repo_clone.as_ref(),
-                            ) {
-                                Ok(_) => (),
-                                Err(err) => error!("Error importing iris messages: {}", err),
-                            };
-                        },
-                        Err(_) => {
-                            match import_iris_messages(
-                                &datetime.date(),
-                                station_repo_clone.as_ref(),
-                                message_repo_clone.as_ref(),
-                                stop_repo_clone.as_ref(),
-                            ) {
-                                Ok(_) => (),
-                                Err(err) => error!("Error importing iris messages: {}", err),
-                            };
-                        },
+                    // Messages-only import for today.
+                    if let Some(ds100) = &single_station {
+                        if let Err(err) = import_iris_changes_for_station_by_ds100(
+                            ds100,
+                            &now.date(),
+                            message_repo.as_ref(),
+                            stop_repo.as_ref(),
+                        ) {
+                            error!("Error importing iris messages: {}", err);
+                        }
+                    } else if let Err(err) = import_iris_changes(
+                        &now.date(),
+                        station_repo.as_ref(),
+                        message_repo.as_ref(),
+                        stop_repo.as_ref(),
+                    ) {
+                        error!("Error importing iris messages: {}", err);
                     }
-
-
                 }
-                loop_count += 1;
 
-                thread::sleep(Duration::from_secs(60 * 20));
+                loop_count += 1;
+                thread::sleep(Duration::from_secs(20 * 60));
             }
+
             println!("Thread stopping gracefully.");
         });
     }
 
-    /// Request the background worker to stop.
-    ///
-    /// Sets the atomic flag read by the loop in [`start`](Self::start). The
-    /// worker exits after the current sleep concludes, so expect up to
-    /// **20 minutes** of latency. The flag remains set; calling `start` again on
-    /// the same instance will not restart the worker.
+    /// Request cooperative shutdown (takes effect after the current sleep).
     pub fn stop(&self) {
         self.stop_ch.store(true, Ordering::Relaxed);
     }

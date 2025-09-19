@@ -18,7 +18,7 @@ pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station, date: &Nai
                 continue;
             }
         };
-        let stop = Stop::from_iris_stop(stop, &train, station);
+        let stop = Stop::from_iris_stop(stop, &train.id, station.id);
 
         stops.push(stop);
         trains.push(train);
@@ -27,17 +27,23 @@ pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station, date: &Nai
     (trains, stops)
 }
 
-pub fn ingest_timetable_messages(tt_with_messages: &Timetable, stops: HashMap<String, &Stop>) -> Vec<Message> {
-    let mut messages: Vec<Message> = Vec::with_capacity(tt_with_messages.stops.len());
-    for iris_stop in tt_with_messages.stops.iter() {
-        let train_id = match stops.get(&iris_stop.id) {
-            Some(st) => st.train_id.to_string(),
+
+pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &Stop>) -> (Vec<Message>, Vec<Stop>) {
+    let mut messages: Vec<Message> = Vec::with_capacity(tt_changes.stops.len());
+    let mut stop_changes: Vec<Stop> = Vec::with_capacity(tt_changes.stops.len());
+
+    for iris_stop_change in tt_changes.stops.iter() {
+        let known_stop = match stops.get(&iris_stop_change.id) {
+            Some(st) => *st,
             None => { // This can happen if the message is for a stop thats outside the time window the stops are fetched for
-                debug!("{:?} not found in stops", iris_stop);
+                debug!("{:?} not found in stops", iris_stop_change);
                 continue;
             }
         };
-        for msg in iris_stop.msgs.iter() {
+        let train_id = known_stop.train_id.clone();
+        stop_changes.push(Stop::from_iris_stop(iris_stop_change, &known_stop.train_id, known_stop.station_id));
+
+        for msg in iris_stop_change.msgs.iter() {
             let message = match Message::from_iris_msg(msg, &train_id) {
                 Ok(message) => message,
                 Err(err) => {
@@ -48,8 +54,8 @@ pub fn ingest_timetable_messages(tt_with_messages: &Timetable, stops: HashMap<St
             messages.push(message);
         }
 
-        if iris_stop.arrival.is_some() {
-            for msg in iris_stop.arrival.as_ref().unwrap().msgs.iter() {
+        if iris_stop_change.arrival.is_some() {
+            for msg in iris_stop_change.arrival.as_ref().unwrap().msgs.iter() {
                 let message = match Message::from_iris_msg(msg, &train_id) {
                     Ok(message) => message,
                     Err(err) => {
@@ -61,8 +67,8 @@ pub fn ingest_timetable_messages(tt_with_messages: &Timetable, stops: HashMap<St
             }
         }
 
-        if iris_stop.departure.is_some() {
-            for msg in iris_stop.departure.as_ref().unwrap().msgs.iter() {
+        if iris_stop_change.departure.is_some() {
+            for msg in iris_stop_change.departure.as_ref().unwrap().msgs.iter() {
                 let message = match Message::from_iris_msg(msg, &train_id) {
                     Ok(message) => message,
                     Err(err) => {
@@ -74,5 +80,5 @@ pub fn ingest_timetable_messages(tt_with_messages: &Timetable, stops: HashMap<St
             }
         }
     }
-    messages
+    (messages, stop_changes)
 }

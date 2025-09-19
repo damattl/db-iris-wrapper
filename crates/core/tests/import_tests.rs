@@ -42,7 +42,7 @@ fn import_iris_data_for_single_station_succeeds() {
     // Test
 
     let date = Local::now().naive_local();
-    let (trains, stops, messages) = import_iris_data_for_station_by_ds100("AH", &date, &message_repo, &train_repo, &stop_repo).unwrap();
+    let (trains, stops, messages) = import_iris_data_for_station_by_ds100("AH", &date, 12, &message_repo, &train_repo, &stop_repo).unwrap();
 
     // let station_id = stops.first().unwrap().station_id;
 
