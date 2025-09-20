@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, NaiveDateTime, Utc};
 use diesel::{prelude::{Insertable, Queryable}, Selectable};
 
 
@@ -18,6 +18,7 @@ pub struct MessageRow {
     pub code: Option<i32>,
     pub timestamp: NaiveDateTime,
     pub m_type: Option<String>,
+    pub last_updated: Option<DateTime<Utc>>,
 }
 
 impl From<Message> for MessageRow {
@@ -37,7 +38,8 @@ impl From<&Message> for MessageRow {
             category: msg.category.clone(),
             code: msg.code,
             timestamp: msg.timestamp,
-            m_type: msg.m_type.clone()
+            m_type: msg.m_type.clone(),
+            last_updated: msg.last_updated,
         }
     }
 }
@@ -60,7 +62,8 @@ impl From<&MessageRow> for Message {
             category: msg.category.clone(),
             code: msg.code,
             timestamp: msg.timestamp,
-            m_type: msg.m_type.clone()
+            m_type: msg.m_type.clone(),
+            last_updated: msg.last_updated,
         }
     }
 }

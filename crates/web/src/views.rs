@@ -1,4 +1,4 @@
-use chrono::{NaiveDate, NaiveDateTime, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, Utc};
 use chrono_tz::Europe::Berlin;
 use rocket_okapi::okapi::schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -142,6 +142,8 @@ pub struct MessageView {
     pub code: Option<i32>,
     pub timestamp: NaiveDateTime,
     pub m_type: Option<String>,
+
+    pub last_updated: Option<DateTime<Utc>>,
 }
 
 impl MessageView {
@@ -157,6 +159,7 @@ impl MessageView {
             code: message.code,
             timestamp: message.timestamp,
             m_type: message.m_type.clone(),
+            last_updated: message.last_updated,
         }
     }
 }

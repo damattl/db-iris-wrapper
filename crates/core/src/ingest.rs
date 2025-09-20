@@ -28,7 +28,8 @@ pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station) -> (Vec<Tr
 
 
 pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &Stop>) -> (Vec<Message>, Vec<Stop>) {
-    let mut messages: Vec<Message> = Vec::with_capacity(tt_changes.stops.len());
+    let mut messages_set: HashMap<String, Message> = HashMap::new();
+
     let mut stop_changes: Vec<Stop> = Vec::with_capacity(tt_changes.stops.len());
 
     for iris_stop_change in tt_changes.stops.iter() {
@@ -50,7 +51,7 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
                     continue;
                 }
             };
-            messages.push(message);
+            messages_set.insert(message.id.clone(), message);
         }
 
         if iris_stop_change.arrival.is_some() {
@@ -62,7 +63,7 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
                         continue;
                     }
                 };
-                messages.push(message);
+                messages_set.insert(message.id.clone(), message);
             }
         }
 
@@ -75,9 +76,12 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
                         continue;
                     }
                 };
-                messages.push(message);
+                messages_set.insert(message.id.clone(), message);
             }
         }
     }
+
+    let messages = messages_set.into_values().collect();
+
     (messages, stop_changes)
 }

@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, NaiveDateTime, Utc};
 
 #[derive(Debug, Clone)]
 pub struct Message {
@@ -11,6 +11,7 @@ pub struct Message {
     pub code: Option<i32>,
     pub timestamp: NaiveDateTime,
     pub m_type: Option<String>,
+    pub last_updated: Option<DateTime<Utc>>,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -35,6 +36,8 @@ impl Message {
             code: msg.code,
             timestamp: msg.ts.ok_or(MessageBuildError::MissingTimestamp)?,
             m_type: msg.kind.clone(),
+            last_updated: Some(Utc::now()),
+            // It probably makes sense to update the last_updated timestamp when a message is imported from Iris.
         })
     }
 }

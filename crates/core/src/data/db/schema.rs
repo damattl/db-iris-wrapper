@@ -11,6 +11,7 @@ diesel::table! {
         code -> Nullable<Int4>,
         timestamp -> Timestamp,
         m_type -> Nullable<Text>,
+        last_updated -> Nullable<Timestamptz>,
     }
 }
 

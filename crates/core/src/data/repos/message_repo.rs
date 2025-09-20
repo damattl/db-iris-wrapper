@@ -1,5 +1,5 @@
  use chrono::NaiveDateTime;
-use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
+use diesel::{upsert::excluded, ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
  use crate::{data::repos::utils::{map_pool_err, map_query_result_err}, model::Message, ports::{Port, PortError, MessagePort}};
  use crate::data::db::{schema::messages, PgPool, row::MessageRow};
@@ -63,7 +63,11 @@ use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
          let mut conn = self.pool.get().map_err(map_pool_err)?;
          let result = diesel::insert_into(messages::table)
              .values(messages.iter().map(MessageRow::from).collect::<Vec<MessageRow>>())
-             .on_conflict_do_nothing()
+             .on_conflict(messages::id)
+             .do_update()
+             .set((
+                 messages::last_updated.eq(excluded(messages::last_updated)),
+             ))
              .returning(MessageRow::as_returning())
              .get_results::<MessageRow>(&mut conn)
              .map_err(map_query_result_err)?;
