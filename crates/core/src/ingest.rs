@@ -1,15 +1,14 @@
 use std::collections::HashMap;
 
-use chrono::{NaiveDate};
 use iris::dto::Timetable;
 
 use crate::model::{Message, Train, Station, Stop};
 
-pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station, date: &NaiveDate) -> (Vec<Train>, Vec<Stop>) {
+pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station) -> (Vec<Train>, Vec<Stop>) {
     let mut trains: Vec<Train> = Vec::with_capacity(tt.stops.len());
     let mut stops: Vec<Stop> = Vec::with_capacity(tt.stops.len());
     for stop in tt.stops.iter() {
-        let train = match Train::from_stop(stop, date) {
+        let train = match Train::from_stop(stop) {
             Ok(train) => {
                 train
             }

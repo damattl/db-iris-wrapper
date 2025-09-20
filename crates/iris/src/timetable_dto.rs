@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, ParseResult};
 use serde::{Deserialize, Deserializer, Serialize};
 
 
@@ -50,6 +50,21 @@ pub struct Stop {
     #[serde(rename = "dp")]
     #[serde(default)]
     pub departure: Option<Movement>,
+}
+
+// Every stop id has a format like 436096027952993164-2509191659-18
+// where the middle part is the departure time in the format "yymmddHHMM"
+// from the first station on the trains journey
+pub fn get_first_stop_departure_from_stop_id(stop: &Stop) -> Option<NaiveDateTime> {
+    let splits: Vec<&str> = stop.id.split("-").collect();
+    let departure = match splits.len() {
+        0 => None,
+        1 => None,
+        n => Some(splits[n-2])
+    }?;
+
+
+    parse_yymmdd_hhmm(departure).inspect_err(|e| error!("Error parsing first stop departure time: {} - {}", e, departure)).ok()
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -180,11 +195,15 @@ where
     Ok(Some(de_tts(de)?))
 }
 
+fn parse_yymmdd_hhmm(s: &str) -> ParseResult<NaiveDateTime> {
+    // Example: "2509051025" = 2025-09-05 10:25
+    NaiveDateTime::parse_from_str(s, "%y%m%d%H%M")
+}
+
 fn de_pt_yymmdd_hhmm<'de, D>(de: D) -> std::result::Result<NaiveDateTime, D::Error>
 where
     D: Deserializer<'de>,
 {
     let s = String::deserialize(de)?;
-    // Example: "2509051025" = 2025-09-05 10:25
-    NaiveDateTime::parse_from_str(&s, "%y%m%d%H%M").map_err(serde::de::Error::custom)
+    parse_yymmdd_hhmm(&s).map_err(serde::de::Error::custom)
 }

@@ -132,7 +132,7 @@ pub fn import_iris_data_for_station(
 
         info!("Ingesting timetable");
 
-        let (mut new_trains, mut new_stops) = ingest_timetable(&tt, station, &date);
+        let (mut new_trains, mut new_stops) = ingest_timetable(&tt, station);
         trains.append(&mut new_trains);
         stops.append(&mut new_stops);
     }

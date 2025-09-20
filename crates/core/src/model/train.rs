@@ -1,5 +1,5 @@
 use chrono::{NaiveDate};
-use iris;
+use iris::{self, dto::get_first_stop_departure_from_stop_id};
 
 
 #[derive(Debug, Clone)]
@@ -21,17 +21,23 @@ pub enum TrainBuildError {
     MissingNumber,
     #[error("missing category")]
     MissingCategory,
+    #[error("invalid stop date {0}")]
+    InvalidStopDate(String),
 }
 
 impl Train {
     pub fn new_id(number: &str, date: &NaiveDate) -> String {
         format!("{}-{}", number, date.format("%y%m%d"))
     }
-    pub fn from_stop(stop: &iris::dto::Stop, date: &NaiveDate) -> Result<Self, TrainBuildError> {
+    pub fn from_stop(stop: &iris::dto::Stop) -> Result<Self, TrainBuildError> {
         let tl = stop.tl.as_ref().ok_or(TrainBuildError::MissingTL)?;
         let number = tl.number.as_ref().ok_or(TrainBuildError::MissingNumber)?;
 
-        let id = Self::new_id(number, date);
+        let date = get_first_stop_departure_from_stop_id(stop)
+            .ok_or(TrainBuildError::InvalidStopDate(stop.id.clone()))?
+            .date();
+
+        let id = Self::new_id(number, &date);
 
         let arr = &stop.arrival;
         let dep = &stop.departure;
@@ -51,7 +57,7 @@ impl Train {
                 category: tl.category.as_deref().ok_or(TrainBuildError::MissingCategory)?.to_owned(),
                 line,
                 operator: tl.operator.to_owned(),
-                date: *date,
+                date,
             }
         )
     }
