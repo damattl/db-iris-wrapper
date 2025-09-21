@@ -45,3 +45,21 @@ export function displayDate(
 
   return parseDate(date)?.toLocaleDateString("de-DE", options);
 }
+
+export function displayDateTime(
+  date?: Date | string | number | null,
+): string | null | undefined {
+  if (!date) {
+    return null;
+  }
+
+  const options: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+
+  return parseDate(date)?.toLocaleDateString("de-DE", options);
+}

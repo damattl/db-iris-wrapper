@@ -81,6 +81,7 @@ function RouteComponent() {
         <Calendar
           value={date}
           onChange={(e) => setDate(e.value as Date)}
+          maxDate={new Date()}
           placeholder="Datum"
           showIcon
           className="md:w-auto w-full"

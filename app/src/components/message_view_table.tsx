@@ -1,4 +1,5 @@
 import type { MessageView, StatusCodeView } from "@/api";
+import { displayDateTime } from "@/utils/date";
 import { useRouter } from "@tanstack/react-router";
 import { Column } from "primereact/column";
 import { DataTable, type DataTableRowClickEvent } from "primereact/datatable";
@@ -50,9 +51,22 @@ export function MessageViewTable({ messages, codes }: MessageViewTableProps) {
           }}
           header="Beschreibung"
         ></Column>
-        <Column field="timestamp" header="Timestamp"></Column>
-        <Column field="valid_from" header="Gültig ab"></Column>
-        <Column field="valid_to" header="Gültig bis"></Column>
+        <Column
+          body={(row: MessageView) => displayDateTime(row.timestamp)}
+          header="Erstellt (Europe/Berlin)"
+        ></Column>
+        <Column
+          body={(row: MessageView) => displayDateTime(row.last_updated)}
+          header="Zuletzt aktualisiert"
+        ></Column>
+        <Column
+          body={(row: MessageView) => displayDateTime(row.valid_from)}
+          header="Gültig ab"
+        ></Column>
+        <Column
+          body={(row: MessageView) => displayDateTime(row.valid_to)}
+          header="Gültig bis"
+        ></Column>
         <Column field="train_id" header="Zug ID"></Column>
       </DataTable>
     </div>

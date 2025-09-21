@@ -88,7 +88,11 @@ function RouteComponent() {
         <h2 className="text-2xl font-bold inline">{displayDate(date)}</h2>
       </div>
       <h3 className="text-xl font-bold my-3">Züge</h3>
-      <TrainViewTable stops={stops ?? []} trains={trains ?? []} />
+      <TrainViewTable
+        station={station}
+        stops={stops ?? []}
+        trains={trains ?? []}
+      />
     </div>
   );
 }

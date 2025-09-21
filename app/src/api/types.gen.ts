@@ -56,6 +56,7 @@ export type MessageView = {
     code?: number | null;
     timestamp: string;
     m_type?: string | null;
+    last_updated?: string | null;
 };
 
 export type StatusCodeView = {

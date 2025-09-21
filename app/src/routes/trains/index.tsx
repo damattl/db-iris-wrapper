@@ -68,6 +68,11 @@ function RouteComponent() {
         <Calendar
           value={date}
           onChange={(e) => setDate(e.value as Date)}
+          maxDate={(() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 1); // Can only fetch half a day ahead
+            return d;
+          })()}
           placeholder="Datum"
           showIcon
           className="md:w-auto w-full"

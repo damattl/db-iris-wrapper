@@ -1,4 +1,4 @@
-import type { StopView, TrainView } from "@/api";
+import type { StationView, StopView, TrainView } from "@/api";
 import { getTimestamp } from "@/utils/date";
 import { arrivalComparer, displayTime } from "@/utils/stop";
 import { useRouter } from "@tanstack/react-router";
@@ -9,9 +9,14 @@ import { useEffect, useMemo } from "react";
 interface TrainViewTableProps {
   stops: StopView[];
   trains: TrainView[];
+  station?: StationView;
 }
 
-export function TrainViewTable({ trains, stops }: TrainViewTableProps) {
+export function TrainViewTable({
+  trains,
+  stops,
+  station,
+}: TrainViewTableProps) {
   const router = useRouter();
 
   useEffect(() => {
@@ -90,9 +95,17 @@ export function TrainViewTable({ trains, stops }: TrainViewTableProps) {
       }
     >
       <Column field="number" header="Nummer"></Column>
-      <Column field="operator" header="Operator Code"></Column>
       <Column field="category" header="Kategorie"></Column>
       <Column field="line" header="Linie"></Column>
+      <Column
+        body={(train: TrainView) => {
+          const stop = stopsByTrain[train.id];
+          const planned = stop?.departure?.planned_path;
+          const last = planned?.[planned.length - 1];
+          return last ?? station?.name ?? "";
+        }}
+        header="Nach"
+      ></Column>
       <Column
         body={(train: TrainView) => {
           const stop = stopsByTrain[train.id];
@@ -107,6 +120,14 @@ export function TrainViewTable({ trains, stops }: TrainViewTableProps) {
         }}
         header="Abfahrt"
       ></Column>
+      <Column
+        body={(train: TrainView) => {
+          const stop = stopsByTrain[train.id];
+          return stop?.departure?.planned_path?.[0];
+        }}
+        header="Nächster Halt"
+      ></Column>
+      <Column field="operator" header="Betreiber"></Column>
     </DataTable>
   );
 }
