@@ -62,3 +62,75 @@ impl Train {
         )
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::NaiveDateTime;
+    use iris::dto::{Movement as IrisMovement, Stop as IrisStop, TrainLine};
+
+    fn base_stop() -> IrisStop {
+        let planned = NaiveDateTime::parse_from_str("2025-09-10 08:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+        IrisStop {
+            id: "test-stop-2509100800-1".to_string(),
+            eva: Some("8002549".to_string()),
+            tl: Some(TrainLine {
+                f: None,
+                t: None,
+                operator: Some("DB".to_string()),
+                category: Some("ICE".to_string()),
+                number: Some("123".to_string()),
+            }),
+            msgs: Vec::new(),
+            arrival: Some(IrisMovement {
+                planned: Some(planned),
+                current: None,
+                platform: None,
+                line: None,
+                hi: None,
+                ppth: None,
+                cpth: None,
+                cs: None,
+                clt: None,
+                wings: None,
+                msgs: Vec::new(),
+            }),
+            departure: None,
+        }
+    }
+
+    #[test]
+    fn train_from_stop_builds_expected_identifier() {
+        let stop = base_stop();
+
+        let train = Train::from_stop(&stop).expect("expected train to build");
+
+        assert_eq!("123-250910", train.id);
+        assert_eq!(Some("DB".to_string()), train.operator);
+        assert_eq!("ICE", train.category);
+        assert_eq!("123", train.number);
+    }
+
+    #[test]
+    fn train_from_stop_requires_train_line() {
+        let mut stop = base_stop();
+        stop.tl = None;
+
+        let err = Train::from_stop(&stop).unwrap_err();
+        assert!(matches!(err, TrainBuildError::MissingTL));
+    }
+
+    #[test]
+    fn train_from_stop_requires_number_and_category() {
+        let mut stop_missing_number = base_stop();
+        stop_missing_number.tl.as_mut().unwrap().number = None;
+        let err = Train::from_stop(&stop_missing_number).unwrap_err();
+        assert!(matches!(err, TrainBuildError::MissingNumber));
+
+        let mut stop_missing_category = base_stop();
+        stop_missing_category.tl.as_mut().unwrap().category = None;
+        let err = Train::from_stop(&stop_missing_category).unwrap_err();
+        assert!(matches!(err, TrainBuildError::MissingCategory));
+    }
+}

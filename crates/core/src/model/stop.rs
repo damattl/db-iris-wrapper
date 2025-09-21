@@ -127,3 +127,70 @@ where
 
     (next_stop, next_stops, past_stops)
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use chrono::NaiveDateTime;
+
+    fn map_stop_id(stop: &Stop) -> String {
+        stop.id.clone()
+    }
+
+    fn build_stop(
+        id: &str,
+        arrival: Option<NaiveDateTime>,
+        departure: Option<NaiveDateTime>,
+    ) -> Stop {
+        Stop {
+            id: id.to_string(),
+            train_id: "train".to_string(),
+            station_id: 42,
+            arrival: arrival.map(|planned| Movement {
+                platform: None,
+                planned: Some(planned),
+                current: None,
+                planned_path: None,
+                changed_path: None,
+            }),
+            departure: departure.map(|planned| Movement {
+                platform: None,
+                planned: Some(planned),
+                current: None,
+                planned_path: None,
+                changed_path: None,
+            }),
+        }
+    }
+
+    #[test]
+    fn split_stops_by_time_returns_buckets_and_next() {
+        let now = NaiveDateTime::parse_from_str("2025-09-10 12:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+
+        let past = build_stop("past-2509101100-1", Some(NaiveDateTime::parse_from_str("2025-09-10 11:00:00", "%Y-%m-%d %H:%M:%S").unwrap()), None);
+        let future_later = build_stop("future-b-2509101400-1", Some(NaiveDateTime::parse_from_str("2025-09-10 14:00:00", "%Y-%m-%d %H:%M:%S").unwrap()), None);
+        let future_earliest = build_stop("future-a-2509101300-1", Some(NaiveDateTime::parse_from_str("2025-09-10 13:00:00", "%Y-%m-%d %H:%M:%S").unwrap()), None);
+
+        let stops = vec![past, future_later.clone(), future_earliest.clone()];
+
+        let (next_stop, next_stops, past_stops) = split_stops_by_time(&stops, &now, map_stop_id);
+
+        assert_eq!(Some(future_earliest.id.clone()), next_stop);
+        assert_eq!(vec![future_later.id.clone(), future_earliest.id.clone()], next_stops);
+        assert_eq!(vec!["past-2509101100-1".to_string()], past_stops);
+    }
+
+    #[test]
+    fn split_stops_by_time_ignores_stops_without_times() {
+        let now = NaiveDateTime::parse_from_str("2025-09-10 12:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+
+        let stops = vec![build_stop("no-times", None, None)];
+
+        let (next_stop, next_stops, past_stops) = split_stops_by_time(&stops, &now, map_stop_id);
+
+        assert!(next_stop.is_none());
+        assert!(next_stops.is_empty());
+        assert!(past_stops.is_empty());
+    }
+}

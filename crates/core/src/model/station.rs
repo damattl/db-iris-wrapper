@@ -40,3 +40,39 @@ impl Station {
         })
     }
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use iris::dto::StationInfo;
+
+    fn sample_info(ds100: Option<&str>) -> StationInfo {
+        StationInfo {
+            eva: 2_000_000_000,
+            ds100: ds100.map(|s| s.to_string()),
+            lat: 53.5511,
+            lon: 9.9937,
+            name: "Hamburg Hbf".to_string(),
+            is_active_ris: true,
+            is_active_iris: true,
+            meta_evas: vec![],
+            available_transports: vec!["INTERCITY_TRAIN".to_string()],
+            number_of_events: Some(0),
+        }
+    }
+
+    #[test]
+    fn station_from_info_requires_ds100() {
+        let err = Station::from_info(sample_info(None)).unwrap_err();
+        assert!(matches!(err, StationBuildError::MissingDS100));
+    }
+
+    #[test]
+    fn station_from_info_casts_eva_to_i32() {
+        let station = Station::from_info(sample_info(Some("AH"))).expect("station should build");
+        assert_eq!(2_000_000_000i32, station.id);
+        assert_eq!("AH", station.ds100);
+        assert_eq!(Some(53.5511), station.lat);
+    }
+}

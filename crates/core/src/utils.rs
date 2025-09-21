@@ -32,10 +32,27 @@ impl Iterator for HourIter {
     }
 }
 
+pub fn get_bool_env(flag: &str) -> bool {
+    let val = env::var(flag).unwrap_or_else(|_| "false".to_string());
+    let flag: bool = matches!(val.to_lowercase().as_str(), "1" | "true" | "yes" | "on");
+    flag
+}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
+    use std::sync::{Mutex, OnceLock};
+
+    static ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+    fn env_guard() -> std::sync::MutexGuard<'static, ()> {
+        ENV_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(|poison| poison.into_inner())
+    }
 
     #[test]
     fn test_generate_hours() {
@@ -74,10 +91,26 @@ mod tests {
 
         assert_eq!(expected, actual);
     }
-}
 
-pub fn get_bool_env(flag: &str) -> bool {
-    let val = env::var(flag).unwrap_or_else(|_| "false".to_string());
-    let flag: bool = matches!(val.to_lowercase().as_str(), "1" | "true" | "yes" | "on");
-    flag
+    #[test]
+    fn get_bool_env_treats_truthy_values_as_true() {
+        let _guard = env_guard();
+        for value in ["1", "true", "Yes", "ON"] {
+            env::set_var("WRAPPER_CORE_BOOL", value);
+            assert!(get_bool_env("WRAPPER_CORE_BOOL"), "value {value} should be truthy");
+        }
+        env::remove_var("WRAPPER_CORE_BOOL");
+    }
+
+    #[test]
+    fn get_bool_env_defaults_to_false() {
+        let _guard = env_guard();
+        env::remove_var("WRAPPER_CORE_BOOL");
+        assert!(!get_bool_env("WRAPPER_CORE_BOOL"));
+        for value in ["0", "false", "off", "random"] {
+            env::set_var("WRAPPER_CORE_BOOL", value);
+            assert!(!get_bool_env("WRAPPER_CORE_BOOL"), "value {value} should be falsey");
+        }
+        env::remove_var("WRAPPER_CORE_BOOL");
+    }
 }
