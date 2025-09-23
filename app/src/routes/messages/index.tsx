@@ -1,11 +1,9 @@
 import type { StatusCodeView } from "@/api";
-import {
-  messagesForDateAndCodeOptions,
-  statusCodesOptions,
-} from "@/api/@tanstack/react-query.gen";
+import { messagesForDateAndCodeOptions } from "@/api/@tanstack/react-query.gen";
 import { toastRefAtom } from "@/atoms";
 import { apiClient } from "@/client";
 import { MessageViewTable } from "@/components/message_view_table";
+import { useStations, useStatusCodes } from "@/queries";
 import { formatDateYYMMDD } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -30,6 +28,9 @@ function RouteComponent() {
 
   const [toastRef] = useAtom(toastRefAtom);
 
+  const { data: stations } = useStations();
+  const { data: codes } = useStatusCodes();
+
   const queryOptions = messagesForDateAndCodeOptions({
     client: apiClient,
     path: {
@@ -50,14 +51,6 @@ function RouteComponent() {
       });
       return result;
     },
-  });
-
-  const { data: codes } = useQuery({
-    ...statusCodesOptions({
-      client: apiClient,
-    }),
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
 
   if (query.isLoading) return <p>Loading...</p>;
@@ -109,6 +102,7 @@ function RouteComponent() {
       <MessageViewTable
         codes={codes ?? []}
         messages={query.data ?? []}
+        stations={stations ?? []}
       ></MessageViewTable>
     </div>
   );

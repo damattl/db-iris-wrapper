@@ -1306,21 +1306,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-core@npm:5.87.4":
-  version: 5.87.4
-  resolution: "@tanstack/query-core@npm:5.87.4"
-  checksum: 59b6226d27641304e3c68a803e911a7ee76395fdd8b246ec180dd724144f38cf4d0244da7fd7390346a842d04d998ac1b1a4139c9c42f22b39af16c5b8879961
+"@tanstack/query-async-storage-persister@npm:^5.90.2":
+  version: 5.90.2
+  resolution: "@tanstack/query-async-storage-persister@npm:5.90.2"
+  dependencies:
+    "@tanstack/query-core": 5.90.2
+    "@tanstack/query-persist-client-core": 5.90.2
+  checksum: 2884a87d82ec9e3f49cf900951bcc6d9b1ce571d5a0e96b21995828ce4c6314fc88297c95d623d6221d6139a7c7d122ace49d47ac14af5f0e9e6315f4da114c9
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:^5.87.4":
-  version: 5.87.4
-  resolution: "@tanstack/react-query@npm:5.87.4"
+"@tanstack/query-core@npm:5.90.2":
+  version: 5.90.2
+  resolution: "@tanstack/query-core@npm:5.90.2"
+  checksum: ccee5dacfa717ff7cf54d3b1017f9923e160efa8acc52a9af8d1f15e428cb7da95dce2c2cca135fd029ab5837e0b821c599610a32e1671d9da3f76f5c10721e8
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-persist-client-core@npm:5.90.2":
+  version: 5.90.2
+  resolution: "@tanstack/query-persist-client-core@npm:5.90.2"
   dependencies:
-    "@tanstack/query-core": 5.87.4
+    "@tanstack/query-core": 5.90.2
+  checksum: f2d484ffd2766d5af89dc1c2f15fb63c99a23e41a4cb8542ef786447a395f6c919fe720d1bf35e7cfabf8f9f1eb3029299d38c35a0cccd048bdb7a47788c67c4
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.90.2":
+  version: 5.90.2
+  resolution: "@tanstack/react-query@npm:5.90.2"
+  dependencies:
+    "@tanstack/query-core": 5.90.2
   peerDependencies:
     react: ^18 || ^19
-  checksum: d458d046693528e5c3c687bd4e873d63454eb38e52e6ff645e776566bac8aba6cfac25e65a3be0213f2338111b50199a5eb27e349f3de7c360d23ab339822210
+  checksum: da201f43bad8a8b309dea04437d565339c40fb7a384613ccc7392b6869463c35fb1ab1bed130dd15b2c270a629ff4ed97f305f9d3e47b68c7e00d9f336b9e641
   languageName: node
   linkType: hard
 
@@ -1798,7 +1817,8 @@ __metadata:
     "@hey-api/openapi-ts": 0.83.1
     "@tailwindcss/vite": ^4.1.13
     "@tanstack/eslint-plugin-query": ^5.86.0
-    "@tanstack/react-query": ^5.87.4
+    "@tanstack/query-async-storage-persister": ^5.90.2
+    "@tanstack/react-query": ^5.90.2
     "@tanstack/react-router": ^1.131.41
     "@tanstack/react-router-devtools": ^1.131.42
     "@tanstack/router-plugin": ^1.131.41

@@ -1,7 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { stationsOptions } from "../../api/@tanstack/react-query.gen";
-import { apiClient } from "../../client";
 import {
   DataTable,
   type DataTableFilterMeta,
@@ -16,17 +13,14 @@ import { FilterMatchMode } from "primereact/api";
 import { InputText } from "primereact/inputtext";
 import { InputIcon } from "primereact/inputicon";
 import { IconField } from "primereact/iconfield";
+import { useStations } from "@/queries";
 
 export const Route = createFileRoute("/stations/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { data, isSuccess } = useQuery({
-    ...stationsOptions({
-      client: apiClient,
-    }),
-  });
+  const { data, isSuccess } = useStations();
 
   const router = useRouter();
 

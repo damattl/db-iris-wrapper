@@ -1,11 +1,11 @@
 import {
   messagesForTrainOptions,
-  statusCodesOptions,
   trainByIdOptions,
 } from "@/api/@tanstack/react-query.gen";
 import { apiClient } from "@/client";
 import { MessageViewTable } from "@/components/message_view_table";
 import { StopViewTable } from "@/components/stop_view_table";
+import { useStations, useStatusCodes } from "@/queries";
 import { displayDate } from "@/utils/date";
 import { getFullTrainName, getStartToEnd } from "@/utils/train";
 import { useQuery } from "@tanstack/react-query";
@@ -18,13 +18,8 @@ export const Route = createFileRoute("/trains/$id")({
 function RouteComponent() {
   const { id } = Route.useParams();
 
-  const { data: codes } = useQuery({
-    ...statusCodesOptions({
-      client: apiClient,
-    }),
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-  });
+  const { data: stations } = useStations();
+  const { data: codes } = useStatusCodes();
 
   const { data: train, isSuccess: isSuccessTrain } = useQuery({
     ...trainByIdOptions({
@@ -76,10 +71,9 @@ function RouteComponent() {
       <h3 className="text-xl font-bold mt-6 my-3">Meldungen</h3>
       <MessageViewTable
         codes={codes ?? []}
+        stations={stations ?? []}
         messages={messages.filter((m) => m.code)}
       />
     </div>
   );
-
-  return <div>Hello "/trains/$id"!</div>;
 }
