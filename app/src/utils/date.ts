@@ -1,9 +1,11 @@
+/** Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC. */
 export function getTimestamp(
   date?: Date | string | number | null,
 ): number | null | undefined {
   return parseDate(date)?.getTime();
 }
 
+/** Returns the stored time value in milliseconds since midnight, January 1, 1970 UTC. */
 export function getTimestampNotNull(
   date?: Date | string | number | null,
 ): number {
@@ -18,7 +20,7 @@ export function parseDate(
   }
 
   if (date instanceof Date) {
-    return;
+    return date;
   }
   if (typeof date == "string" && date.length == 6) {
     const str = `20${date.substring(0, 2)}-${date.substring(2, 4)}-${date.substring(4)}`;

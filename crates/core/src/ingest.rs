@@ -32,6 +32,8 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
 
     let mut stop_changes: Vec<Stop> = Vec::with_capacity(tt_changes.stops.len());
 
+    let station_id = tt_changes.eva.as_deref().unwrap().parse::<i32>().unwrap(); // Changes Timetable always has an eva
+
     for iris_stop_change in tt_changes.stops.iter() {
         let known_stop = match stops.get(&iris_stop_change.id) {
             Some(st) => *st,
@@ -44,7 +46,7 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
         stop_changes.push(Stop::from_iris_stop(iris_stop_change, &known_stop.train_id, known_stop.station_id));
 
         for msg in iris_stop_change.msgs.iter() {
-            let message = match Message::from_iris_msg(msg, &train_id) {
+            let message = match Message::from_iris_msg(msg, &train_id, station_id) {
                 Ok(message) => message,
                 Err(err) => {
                     error!("Error building message from iris message: {}", err);
@@ -56,7 +58,7 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
 
         if iris_stop_change.arrival.is_some() {
             for msg in iris_stop_change.arrival.as_ref().unwrap().msgs.iter() {
-                let message = match Message::from_iris_msg(msg, &train_id) {
+                let message = match Message::from_iris_msg(msg, &train_id, station_id) {
                     Ok(message) => message,
                     Err(err) => {
                         error!("Error building message from iris message: {}", err);
@@ -69,7 +71,7 @@ pub fn ingest_timetable_changes(tt_changes: &Timetable, stops: HashMap<String, &
 
         if iris_stop_change.departure.is_some() {
             for msg in iris_stop_change.departure.as_ref().unwrap().msgs.iter() {
-                let message = match Message::from_iris_msg(msg, &train_id) {
+                let message = match Message::from_iris_msg(msg, &train_id, station_id) {
                     Ok(message) => message,
                     Err(err) => {
                         error!("Error building message from iris message: {}", err);

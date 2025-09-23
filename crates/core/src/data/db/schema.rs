@@ -12,6 +12,14 @@ diesel::table! {
         timestamp -> Timestamp,
         m_type -> Nullable<Text>,
         last_updated -> Nullable<Timestamptz>,
+        iris_id -> Text,
+    }
+}
+
+diesel::table! {
+    messages_to_stations (message_id, station_id) {
+        station_id -> Int4,
+        message_id -> Text,
     }
 }
 
@@ -63,11 +71,14 @@ diesel::table! {
 }
 
 diesel::joinable!(messages -> trains (train_id));
+diesel::joinable!(messages_to_stations -> messages (message_id));
+diesel::joinable!(messages_to_stations -> stations (station_id));
 diesel::joinable!(stops -> stations (station_id));
 diesel::joinable!(stops -> trains (train_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     messages,
+    messages_to_stations,
     stations,
     status_codes,
     stops,

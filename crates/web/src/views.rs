@@ -144,6 +144,8 @@ pub struct MessageView {
     pub m_type: Option<String>,
 
     pub last_updated: Option<DateTime<Utc>>,
+
+    pub stations: Vec<i32>,
 }
 
 impl MessageView {
@@ -160,6 +162,7 @@ impl MessageView {
             timestamp: message.timestamp,
             m_type: message.m_type.clone(),
             last_updated: message.last_updated,
+            stations: message.stations.clone(),
         }
     }
 }

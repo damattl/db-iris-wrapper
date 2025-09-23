@@ -1,5 +1,5 @@
 import type { MessageView, StatusCodeView } from "@/api";
-import { displayDateTime } from "@/utils/date";
+import { displayDateTime, getTimestampNotNull } from "@/utils/date";
 import { useRouter } from "@tanstack/react-router";
 import { Column } from "primereact/column";
 import { DataTable, type DataTableRowClickEvent } from "primereact/datatable";
@@ -30,7 +30,10 @@ export function MessageViewTable({ messages, codes }: MessageViewTableProps) {
     const message = e.data as MessageView;
     if (!message.train_id) return;
 
-    router.navigate({ to: `/trains/${message.train_id}` });
+    const url = router.buildLocation({
+      to: `/trains/${message.train_id}`,
+    }).href;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -40,7 +43,11 @@ export function MessageViewTable({ messages, codes }: MessageViewTableProps) {
         emptyMessage="Keine Einträge vorhanden"
         // rowClassName={rowClassName}
         size="small"
-        value={messages}
+        value={messages.sort(
+          (msgA, msgB) =>
+            getTimestampNotNull(msgA.timestamp) -
+            getTimestampNotNull(msgB.timestamp),
+        )}
         rowHover
         tableStyle={{ minWidth: "50rem" }}
       >

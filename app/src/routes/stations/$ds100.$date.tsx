@@ -83,7 +83,7 @@ function RouteComponent() {
     <div>
       <div className="flex justify-between mb-4">
         <h2 className="text-2xl font-bold inline">
-          {station?.name} ({station?.ds100})
+          {station?.name} ({station?.ds100} / {station?.id})
         </h2>
         <h2 className="text-2xl font-bold inline">{displayDate(date)}</h2>
       </div>
