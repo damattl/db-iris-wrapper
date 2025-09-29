@@ -36,7 +36,7 @@ pub fn get_timetable_for_station(
     }
 
     if body.starts_with("<timetable/>") {
-        return Err(IRISTimetableError::EmptyTimetable(time));
+        return Err(IRISTimetableError::EmptyTimetable(time.into()));
     }
     debug!("Body: {}", body);
     let timetable: Timetable = from_str(&body).inspect_err(|_| {
@@ -62,7 +62,7 @@ pub fn get_timetable_changes_for_station(
         .into_string()?;
 
     if body.starts_with("<timetable/>") {
-        return Err(IRISTimetableError::EmptyTimetable(25));
+        return Err(IRISTimetableError::EmptyTimetable(station_id));
     }
     debug!("Body: {}", body);
     let timetable: Timetable = from_str(&body).inspect_err(|_| {

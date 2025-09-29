@@ -13,7 +13,7 @@ pub enum IRISTimetableError {
     #[error("status {0}, error_response: {1}")]
     RequestFailed(u16, String),
     #[error("empty timetable for {0}")]
-    EmptyTimetable(u16),
+    EmptyTimetable(i32),
 }
 
 #[derive(Debug, Deserialize, Serialize)]

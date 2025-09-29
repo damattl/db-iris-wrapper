@@ -35,8 +35,8 @@ impl Message {
         let id = format!("{}-{}", iris_id, ts.format("%Y%m%d")); // In case there are duplicates over time
 
         Ok(Message {
-            id: id,
-            iris_id: iris_id,
+            id,
+            iris_id,
             train_id: train_id.to_string(),
             valid_from: msg.from,
             valid_to: msg.to,

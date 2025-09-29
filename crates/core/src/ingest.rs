@@ -8,6 +8,10 @@ pub fn ingest_timetable(tt: &iris::dto::Timetable, station: &Station) -> (Vec<Tr
     let mut trains: Vec<Train> = Vec::with_capacity(tt.stops.len());
     let mut stops: Vec<Stop> = Vec::with_capacity(tt.stops.len());
     for stop in tt.stops.iter() {
+        if stop.tl.as_ref().and_then(|tl| tl.category.as_ref()).is_none_or(|c| c == "Bus") {
+            continue;
+        }
+
         let train = match Train::from_stop(stop) {
             Ok(train) => {
                 train
