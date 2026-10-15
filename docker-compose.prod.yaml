@@ -1,0 +1,45 @@
+# Production overrides. Use with:
+#   docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up -d --build
+# Required env (e.g. in .env next to this file): DOMAIN, POSTGRES_PASSWORD
+services:
+    db:
+        restart: unless-stopped
+        environment:
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        networks:
+            - default
+
+    server:
+        restart: unless-stopped
+        build:
+            args:
+                VITE_API_BASE_URL: "https://${DOMAIN:?DOMAIN is required}/v1"
+        environment: !override
+            RUST_LOG: "${RUST_LOG:-info}"
+            DATABASE_URL: "postgres://user:${POSTGRES_PASSWORD}@database:5432/iris_wrapper"
+            # SINGLE_STATION: AH # uncomment to restrict the import to one station
+        ports: !reset []
+        networks:
+            - default
+            - traefik-proxy
+        labels:
+            traefik.enable: "true"
+            traefik.docker.network: traefik-proxy
+
+            traefik.http.routers.iris-wrapper-tls.rule: Host(`${DOMAIN}`)
+            traefik.http.routers.iris-wrapper-tls.entrypoints: websecure
+            traefik.http.routers.iris-wrapper-tls.tls: "true"
+            traefik.http.routers.iris-wrapper-tls.tls.certresolver: defaultresolver
+            traefik.http.routers.iris-wrapper-tls.service: iris-wrapper
+            # traefik.http.routers.iris-wrapper-tls.middlewares: demo-auth@file
+
+            traefik.http.services.iris-wrapper.loadbalancer.server.port: "8000"
+
+volumes:
+    db-data:
+
+networks:
+    traefik-proxy:
+        external: true
