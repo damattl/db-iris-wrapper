@@ -6,8 +6,8 @@ import {
   sortByArrival,
   displayTimeCurrent,
 } from "@/utils/stop";
-import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
+import { Column } from "@mantle-ui/react/column";
+import { DataTable } from "@mantle-ui/react/datatable";
 
 interface StopViewTableProps {
   stops: StopView[];

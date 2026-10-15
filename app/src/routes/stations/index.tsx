@@ -4,15 +4,15 @@ import {
   type DataTableFilterMeta,
   type DataTableFilterMetaData,
   type DataTableRowClickEvent,
-} from "primereact/datatable";
-import { Column } from "primereact/column";
+} from "@mantle-ui/react/datatable";
+import { Column } from "@mantle-ui/react/column";
 import type { StationView } from "../../api";
 import { formatDateYYMMDD } from "../../utils";
 import { useState, type ChangeEvent } from "react";
-import { FilterMatchMode } from "primereact/api";
-import { InputText } from "primereact/inputtext";
-import { InputIcon } from "primereact/inputicon";
-import { IconField } from "primereact/iconfield";
+import { FilterMatchMode } from "@mantle-ui/react/api";
+import { InputText } from "@mantle-ui/react/inputtext";
+import { InputIcon } from "@mantle-ui/react/inputicon";
+import { IconField } from "@mantle-ui/react/iconfield";
 import { useStations } from "@/queries";
 
 export const Route = createFileRoute("/stations/")({
@@ -55,7 +55,7 @@ function RouteComponent() {
     return (
       <div className="flex justify-content-end">
         <IconField iconPosition="left">
-          <InputIcon className="pi pi-search" />
+          <InputIcon className="mi mi-search" />
           <InputText
             value={globalFilterValue}
             onChange={onGlobalFilterChange}

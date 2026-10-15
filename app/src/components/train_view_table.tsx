@@ -2,8 +2,8 @@ import type { StationView, StopView, TrainView } from "@/api";
 import { getTimestamp } from "@/utils/date";
 import { arrivalComparer, displayTime } from "@/utils/stop";
 import { useRouter } from "@tanstack/react-router";
-import { Column } from "primereact/column";
-import { DataTable, type DataTableRowClickEvent } from "primereact/datatable";
+import { Column } from "@mantle-ui/react/column";
+import { DataTable, type DataTableRowClickEvent } from "@mantle-ui/react/datatable";
 import { useEffect, useMemo } from "react";
 
 interface TrainViewTableProps {

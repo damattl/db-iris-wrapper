@@ -6,9 +6,9 @@ import { useShowError } from "@/errors";
 import { formatDateYYMMDD } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { InputText } from "primereact/inputtext";
+import { Button } from "@mantle-ui/react/button";
+import { Calendar } from "@mantle-ui/react/calendar";
+import { InputText } from "@mantle-ui/react/inputtext";
 import { useState } from "react";
 
 export const Route = createFileRoute("/trains/")({
@@ -88,7 +88,7 @@ function RouteComponent() {
 
         <Button
           label="Suchen"
-          icon="pi pi-search"
+          icon="mi mi-search"
           onClick={handleSearch}
           disabled={isDisabled}
           loading={query.isLoading}

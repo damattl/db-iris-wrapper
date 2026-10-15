@@ -1,8 +1,8 @@
 import type { MessageView, StationView, StatusCodeView } from "@/api";
 import { displayDateTime, getTimestampNotNull } from "@/utils/date";
 import { useRouter } from "@tanstack/react-router";
-import { Column } from "primereact/column";
-import { DataTable, type DataTableRowClickEvent } from "primereact/datatable";
+import { Column } from "@mantle-ui/react/column";
+import { DataTable, type DataTableRowClickEvent } from "@mantle-ui/react/datatable";
 
 interface MessageViewTableProps {
   messages: MessageView[];

@@ -3,7 +3,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { createRoot } from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { PrimeReactProvider } from "primereact/api";
+import { MantleProvider } from "@mantle-ui/react/api";
 import "./index.css";
 import { queryClient } from "./client";
 
@@ -24,9 +24,9 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <PrimeReactProvider>
+        <MantleProvider>
           <RouterProvider router={router} />
-        </PrimeReactProvider>
+        </MantleProvider>
       </QueryClientProvider>
     </StrictMode>,
   );

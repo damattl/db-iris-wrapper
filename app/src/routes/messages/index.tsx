@@ -8,9 +8,9 @@ import { formatDateYYMMDD } from "@/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useAtom } from "jotai";
-import { Button } from "primereact/button";
-import { Calendar } from "primereact/calendar";
-import { Dropdown } from "primereact/dropdown";
+import { Button } from "@mantle-ui/react/button";
+import { Calendar } from "@mantle-ui/react/calendar";
+import { Dropdown } from "@mantle-ui/react/dropdown";
 import { useState } from "react";
 
 export const Route = createFileRoute("/messages/")({
@@ -93,7 +93,7 @@ function RouteComponent() {
 
         <Button
           label="Suchen"
-          icon="pi pi-search"
+          icon="mi mi-search"
           onClick={handleSearch}
           disabled={isDisabled}
         />
