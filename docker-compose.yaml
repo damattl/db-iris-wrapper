@@ -1,40 +1,32 @@
+# Shared, environment agnostic base. Combine with an environment override:
+#   make dev   (docker-compose.dev.yaml)
+#   make prod  (docker-compose.prod.yaml)
+# Required env: POSTGRES_PASSWORD
 name: db-iris-wrapper
 services:
     db:
         image: postgres
-        restart: always
+        restart: unless-stopped
         # set shared memory limit when using docker-compose
         shm_size: 128mb
-        # or set shared memory limit when deploy via swarm stack
-        #volumes:
-        #  - type: tmpfs
-        #    target: /dev/shm
-        #    tmpfs:
-        #      size: 134217728 # 128*2^20 bytes = 128Mb
         environment:
             POSTGRES_USER: "user"
-            POSTGRES_PASSWORD: 123456789
-        #ports:
-        #    - "5455:5432"
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+
     server:
         build:
             context: .
-            args:
-                VITE_API_BASE_URL: http://localhost:8000/v1
-        restart: always
-        # set shared memory limit when using docker-compose
+        restart: unless-stopped
         shm_size: 128mb
-        # or set shared memory limit when deploy via swarm stack
-        #volumes:
-        #  - type: tmpfs
-        #    target: /dev/shm
-        #    tmpfs:
-        #      size: 134217728 # 128*2^20 bytes = 128Mb
         environment:
-            RUST_LOG: info
-            DATABASE_URL: postgres://user:123456789@database:5432/iris_wrapper
-            SINGLE_STATION: AH # remove this line to enable all stations
+            RUST_LOG: "${RUST_LOG:-info}"
+            DATABASE_URL: "postgres://user:${POSTGRES_PASSWORD}@database:5432/iris_wrapper"
         links:
             - "db:database"
-        ports:
-            - "8000:8000"
+        depends_on:
+            - db
+
+volumes:
+    postgres_data:

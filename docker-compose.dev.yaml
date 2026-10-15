@@ -1,0 +1,16 @@
+# Development overrides. Use with:
+#   make dev
+#   (= docker compose -f docker-compose.yaml -f docker-compose.dev.yaml up --build)
+services:
+    server:
+        build:
+            args:
+                VITE_API_BASE_URL: "http://localhost:8000/v1"
+        environment:
+            SINGLE_STATION: "${SINGLE_STATION:-AH}" # restricts the import to one station
+        ports:
+            - "8000:8000"
+
+volumes:
+    postgres_data:
+        name: db-iris-wrapper.postgres_data.dev

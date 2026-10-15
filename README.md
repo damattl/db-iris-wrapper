@@ -9,8 +9,9 @@ The data is requested periodically and stored in a database.
 - Is currently limited to stations that are capable of handling intercity trains
 
 ## Deployment:
-The project can be deployed using the docker-compose.yaml. \
-In prod use a docker-compose.override.yml to set a secure POSTGRES_PASSWORD. \
+The project can be deployed using Docker Compose. `docker-compose.yaml` holds the shared base, \
+`docker-compose.dev.yaml` and `docker-compose.prod.yaml` the environment specific overrides. \
+Run `make dev` locally or `make prod` on the server (requires `DOMAIN` and `POSTGRES_PASSWORD`). \
 All required environment variables are documented in the .env.example file. \
 Currently it is available under [https://db-iris.it-solutions-mayer.de](https://db-iris.it-solutions-mayer.de)
 (Deployed via Dokku)
