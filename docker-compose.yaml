@@ -22,9 +22,7 @@ services:
         shm_size: 128mb
         environment:
             RUST_LOG: "${RUST_LOG:-info}"
-            DATABASE_URL: "postgres://user:${POSTGRES_PASSWORD}@database:5432/iris_wrapper"
-        links:
-            - "db:database"
+            DATABASE_URL: "postgres://user:${POSTGRES_PASSWORD}@db:5432/iris_wrapper"
         depends_on:
             - db
 
